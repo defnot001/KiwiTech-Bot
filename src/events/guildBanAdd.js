@@ -9,13 +9,13 @@ export const event = {
       type: AuditLogEvent.MemberBanAdd,
     });
 
-    const botLogChannel = ban.guild.channels.cache.get(
-      guildconfig.botLogsChannelId,
+    const modLogChannel = ban.guild.channels.cache.get(
+      guildconfig.modLogChannelId,
     );
     const banLog = fetchedLogs.entries.first();
 
     if (!banLog) {
-      botLogChannel.send(
+      modLogChannel.send(
         `${inlineCode(ban.user.tag)} (<@${ban.user.id}>) was banned from ${
           ban.guild.name
         } but no audit log could be found.`,
@@ -26,7 +26,7 @@ export const event = {
     const { executor, target } = banLog;
 
     if (target.id === ban.user.id) {
-      botLogChannel.send(
+      modLogChannel.send(
         `${inlineCode(ban.user.tag)} (<@${
           ban.user.id
         }>) got hit with the swift hammer of justice in the guild ${inlineCode(
@@ -36,7 +36,7 @@ export const event = {
         }>)!`,
       );
     } else {
-      botLogChannel.send(
+      modLogChannel.send(
         `${inlineCode(ban.user.tag)} (<@${
           ban.user.id
         }>) got hit with the swift hammer of justice in the guild ${inlineCode(
