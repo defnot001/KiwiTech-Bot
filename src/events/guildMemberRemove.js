@@ -1,4 +1,10 @@
-import { AuditLogEvent, inlineCode } from 'discord.js';
+import {
+  AuditLogEvent,
+  EmbedBuilder,
+  userMention,
+  time,
+  inlineCode,
+} from 'discord.js';
 import guildconfig from '../config/guildConfig.js';
 
 export const event = {
@@ -9,36 +15,50 @@ export const event = {
       type: AuditLogEvent.MemberKick,
     });
 
-    const botLogChannel = member.guild.channels.cache.get(
-      guildconfig.botLogsChannelId,
+    const memberLogChannel = member.guild.channels.cache.get(
+      guildconfig.memberLogChannelId,
     );
+    const modLogChannel = member.guild.channels.cache.get(
+      guildconfig.modLogChannelId,
+    );
+
+    // * protect the embed from breaking because joinedAt might not be properly cached
+    const joinedAt = member.joinedAt
+      ? `\nJoined at: ${time(member.joinedAt, 'f')} (${time(
+          member.joinedAt,
+          'R',
+        )})`
+      : '\u200b';
+
+    const userLeaveEmbed = new EmbedBuilder({
+      author: {
+        name: member.user.tag,
+        icon_url: member.user.displayAvatarURL(),
+      },
+      color: 3_092_790,
+      description: `Username: ${userMention(member.user.id)}
+      User ID: ${inlineCode(member.user.id)}${joinedAt}
+      Left at: ${time(new Date(), 'f')} (${time(new Date(), 'R')})`,
+      footer: {
+        text: 'User left',
+      },
+      timestamp: Date.now(),
+    });
+
     const kickLog = fetchedLogs.entries.first();
-
-    if (!kickLog) {
-      botLogChannel.send(
-        `${inlineCode(member.user.tag)} (<@${
-          member.user.id
-        }>) left the guild, audit log fetch was inconclusive.`,
-      );
-      return;
-    }
-
     const { executor, target } = kickLog;
 
+    // TODO: Turn this into a moderation log event
     if (target.id === member.id) {
-      botLogChannel.send(
+      modLogChannel.send(
         `${inlineCode(member.user.tag)} (<@${
           member.user.id
         }>) left the guild. They were kicked by the mighty ${inlineCode(
           executor.tag,
         )} (<@${executor.id}>)!`,
       );
-    } else {
-      botLogChannel.send(
-        `${inlineCode(member.user.tag)} (<@${
-          member.user.id
-        }>) left the guild, most likely of their own will.`,
-      );
     }
+
+    memberLogChannel.send({ embeds: [userLeaveEmbed] });
   },
 };
