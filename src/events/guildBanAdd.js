@@ -4,6 +4,8 @@ import guildconfig from '../config/guildConfig.js';
 export const event = {
   name: 'guildBanAdd',
   async execute(ban) {
+    console.log(`${ban.user.tag} was banned from ${ban.guild.name}.`);
+
     const fetchedLogs = await ban.guild.fetchAuditLogs({
       limit: 1,
       type: AuditLogEvent.MemberBanAdd,

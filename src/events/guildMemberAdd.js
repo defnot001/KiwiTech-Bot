@@ -11,6 +11,8 @@ import guildconfig from '../config/guildConfig.js';
 export const event = {
   name: 'guildMemberAdd',
   async execute(member) {
+    console.log(`${member.user.tag} joined ${member.guild.name}.`);
+
     const memberLogChannel = member.guild.channels.cache.get(
       guildconfig.memberLogChannelId,
     );

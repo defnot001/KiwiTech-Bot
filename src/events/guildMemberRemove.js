@@ -10,6 +10,7 @@ import guildconfig from '../config/guildConfig.js';
 export const event = {
   name: 'guildMemberRemove',
   async execute(member) {
+    console.log(`${member.user.tag} left ${member.guild.name}.`);
     const fetchedLogs = await member.guild.fetchAuditLogs({
       limit: 1,
       type: AuditLogEvent.MemberKick,
@@ -53,6 +54,8 @@ export const event = {
 
     // TODO: Turn this into a moderation log event
     if (target.id === member.id) {
+      console.log(`${member.user.tag} was banned from ${member.guild.name0}.`);
+
       modLogChannel.send(
         `${inlineCode(member.user.tag)} (<@${
           member.user.id
