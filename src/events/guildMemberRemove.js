@@ -36,9 +36,12 @@ export const event = {
         icon_url: member.user.displayAvatarURL(),
       },
       color: 3_092_790,
-      description: `Username: ${userMention(member.user.id)}
-      User ID: ${inlineCode(member.user.id)}${joinedAt}
-      Left at: ${time(new Date(), 'f')} (${time(new Date(), 'R')})`,
+      description: `Username: ${userMention(
+        member.user.id,
+      )}\nUser ID: ${inlineCode(member.user.id)}${joinedAt}\nLeft at: ${time(
+        new Date(),
+        'f',
+      )} (${time(new Date(), 'R')})`,
       footer: {
         text: 'User left',
       },
