@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { SlashCommandBuilder } from 'discord.js';
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -12,33 +12,35 @@ export const command = {
         .addChoices(
           { name: 'Fox', value: 'fox' },
           { name: 'Cat', value: 'cat' },
-          { name: 'Dog', value: 'dog' }
-        )
+          { name: 'Dog', value: 'dog' },
+        ),
     ),
   async execute(interaction) {
+    await interaction.deferReply();
+
     const animal = interaction.options.getString('animal');
     if (animal === 'fox') {
       const response = await fetch('https://randomfox.ca/floof/');
-      const data = response.json();
-      interaction.reply(data.image);
+      const data = await response.json();
+      interaction.editReply(data.image);
       return;
     }
 
     if (animal === 'cat') {
       const response = await fetch(
-        'https://api.thecatapi.com/v1/images/search'
+        'https://api.thecatapi.com/v1/images/search',
       );
       const data = await response.json();
-      interaction.reply(data[0].url);
+      interaction.editReply(data[0].url);
       return;
     }
 
     if (animal === 'dog') {
       const response = await fetch(
-        'https://api.thedogapi.com/v1/images/search'
+        'https://api.thedogapi.com/v1/images/search',
       );
       const data = await response.json();
-      interaction.reply(data[0].url);
+      interaction.editReply(data[0].url);
     }
   },
 };
