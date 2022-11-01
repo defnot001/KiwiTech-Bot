@@ -1,7 +1,7 @@
 import runRconCommand from './rconCommand.js';
 import mcconfig from '../../config/mcConfig.js';
 
-const { host, rconPort, rconPassword } = mcconfig.copy;
+const { host, rconPort, rconPassword } = mcconfig.smp;
 
 export default async function queryScoreboard(scoreboard) {
   const queryCommand = `script run scores = []; for(system_info('server_whitelist'), put(scores, null, l('"' + _ + '"', scoreboard('${scoreboard}', _)) )); print(scores)`;
