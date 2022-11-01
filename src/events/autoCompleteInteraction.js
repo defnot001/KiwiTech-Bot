@@ -1,6 +1,7 @@
 import dictionary119 from '../assets/dictionary_1.19.js';
 
-const objectives = Object.keys(dictionary119).map((key) => key);
+const dictionary = Object.keys(dictionary119).map((key) => key);
+const custom = ['digs', 'deaths', 'bedrock_removed', 'event_dig'];
 
 export const event = {
   name: 'interactionCreate',
@@ -8,25 +9,16 @@ export const event = {
     if (!interaction.isAutocomplete()) return;
 
     if (interaction.commandName === 'scoreboard') {
-      const focusedOption = interaction.options.getFocused(true);
-      // eslint-disable-next-line no-underscore-dangle
-      const actionOption = interaction.options._hoistedOptions.find(
-        (x) => x.name === 'action'
+      const focusedValue = interaction.options.getFocused();
+      const choices = [...dictionary, ...custom];
+      const filtered = choices.filter((choice) =>
+        choice.startsWith(focusedValue),
       );
-      // <action> isn't supplied
-      if (!actionOption) {
-        await interaction.respond({});
-      } else {
-        const filtered = objectives.filter((choice) =>
-          choice.startsWith(`${actionOption.value}${focusedOption.value}`)
-        );
-        await interaction.respond(
-          filtered.slice(0, 25).map((choice) => ({
-            name: choice.replace(actionOption.value, ''),
-            value: choice,
-          }))
-        );
-      }
+      await interaction.respond(
+        filtered
+          .slice(0, 25)
+          .map((choice) => ({ name: choice, value: choice })),
+      );
     }
   },
 };
