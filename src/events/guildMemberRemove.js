@@ -49,12 +49,16 @@ export const event = {
       timestamp: Date.now(),
     });
 
+    memberLogChannel.send({ embeds: [userLeaveEmbed] });
+
     const kickLog = fetchedLogs.entries.first();
+    if (!kickLog) return;
+
     const { executor, target } = kickLog;
 
     // TODO: Turn this into a moderation log event
     if (target.id === member.id) {
-      console.log(`${member.user.tag} was banned from ${member.guild.name0}.`);
+      console.log(`${member.user.tag} was kicked from ${member.guild.name0}.`);
 
       modLogChannel.send(
         `${inlineCode(member.user.tag)} (<@${
@@ -64,7 +68,5 @@ export const event = {
         )} (<@${executor.id}>)!`,
       );
     }
-
-    memberLogChannel.send({ embeds: [userLeaveEmbed] });
   },
 };
