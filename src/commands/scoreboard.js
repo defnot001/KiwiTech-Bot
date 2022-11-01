@@ -17,20 +17,25 @@ export const command = {
   data: new SlashCommandBuilder()
     .setName('scoreboard')
     .setDescription('Get a scoreboard.')
-    .addStringOption((option) =>
-      option
-        .setName('action')
-        .setDescription('Action to search for.')
-        .setRequired(true)
-        .addChoices(...choices)
-    )
-    .addStringOption((option) =>
-      option
-        .setName('item')
-        .setDescription('Item to search for.')
-        .setRequired(true)
-        .setAutocomplete(true)
-    ),
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('query')
+        .setDescription('Returns a Scoreboard with the chosen Values,')
+        .addStringOption((option) =>
+          option
+            .setName('action')
+            .setDescription('Action to search for.')
+            .setRequired(true)
+            .addChoices(...choices),
+        )
+        .addStringOption((option) =>
+          option
+            .setName('objective')
+            .setDescription('Objective to search for.')
+            .setRequired(true)
+            .setAutocomplete(true),
+        ),
+    ).addSubcommand(subcommand => subcommand.setName('custom').setDescription('Returns a scoreboard with custom Values.').addStringOption(option => option.setName('objective').setDescription('Objective to search for.')),
   async execute(interaction) {
     // TODO: scoreboard for a player only
     // TODO: same display as ingame (only 15 players) or full display
@@ -38,10 +43,11 @@ export const command = {
 
     await interaction.deferReply();
 
-    const objective = interaction.options.getString('item');
+    const objective = interaction.options.getString('objective');
     const action = interaction.options.getString('action');
 
     const scores = await queryScoreboard(objective);
+    // const filteredScores = scores.filter((score) => score[1] !== 0);
 
     const choice = choices.find((x) => x.value === action);
 
