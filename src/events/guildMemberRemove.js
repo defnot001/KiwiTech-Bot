@@ -5,7 +5,8 @@ import {
   time,
   inlineCode,
 } from 'discord.js';
-import guildconfig from '../config/guildConfig.js';
+import logChannels from '../util/discord_helpers/loggers.js';
+import buildModerationEmbed from '../util/discord_helpers/moderationEmbed.js';
 
 export const event = {
   name: 'guildMemberRemove',
@@ -16,13 +17,7 @@ export const event = {
       type: AuditLogEvent.MemberKick,
     });
 
-    const memberLogChannel = member.guild.channels.cache.get(
-      guildconfig.memberLogChannelId,
-    );
-    const modLogChannel = member.guild.channels.cache.get(
-      guildconfig.modLogChannelId,
-    );
-
+    const { memberLog, modLog } = logChannels(member.guild);
     // * protect the embed from breaking because joinedAt might not be properly cached
     const joinedAt = member.joinedAt
       ? `\nJoined at: ${time(member.joinedAt, 'f')} (${time(
@@ -49,24 +44,25 @@ export const event = {
       timestamp: Date.now(),
     });
 
-    memberLogChannel.send({ embeds: [userLeaveEmbed] });
+    memberLog.send({ embeds: [userLeaveEmbed] });
 
     const kickLog = fetchedLogs.entries.first();
     if (!kickLog) return;
 
-    const { executor, target } = kickLog;
+    const { executor, target, reason } = kickLog;
+    const executingMember = await member.guild.members.fetch(executor.id);
 
-    // TODO: Turn this into a moderation log event
     if (target.id === member.id) {
-      console.log(`${member.user.tag} was kicked from ${member.guild.name0}.`);
+      console.log(`${member.user.tag} was kicked from ${member.guild.name}.`);
 
-      modLogChannel.send(
-        `${inlineCode(member.user.tag)} (<@${
-          member.user.id
-        }>) left the guild. They were kicked by the mighty ${inlineCode(
-          executor.tag,
-        )} (<@${executor.id}>)!`,
+      const kickEmbed = buildModerationEmbed(
+        member,
+        'Kick',
+        reason,
+        executingMember,
       );
+
+      modLog.send({ embeds: [kickEmbed] });
     }
   },
 };
