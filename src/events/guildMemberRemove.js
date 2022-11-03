@@ -10,34 +10,33 @@ import buildModerationEmbed from '../util/discord_helpers/moderationEmbed.js';
 
 export const event = {
   name: 'guildMemberRemove',
-  async execute(member) {
-    console.log(`${member.user.tag} left ${member.guild.name}.`);
-    const fetchedLogs = await member.guild.fetchAuditLogs({
-      limit: 1,
-      type: AuditLogEvent.MemberKick,
-    });
+  async execute(removedMember) {
+    console.log(`${removedMember.user.tag} left ${removedMember.guild.name}.`);
 
-    const { memberLog, modLog } = logChannels(member.guild);
-    // * protect the embed from breaking because joinedAt might not be properly cached
-    const joinedAt = member.joinedAt
-      ? `\nJoined at: ${time(member.joinedAt, 'f')} (${time(
-          member.joinedAt,
+    const { memberLog, modLog } = logChannels(removedMember.guild);
+
+    // protect the embed from breaking because joinedAt might not be properly cached
+    const joinedAt = removedMember.joinedAt
+      ? `\nJoined at: ${time(removedMember.joinedAt, 'f')} (${time(
+          removedMember.joinedAt,
           'R',
         )})`
       : '\u200b';
 
     const userLeaveEmbed = new EmbedBuilder({
       author: {
-        name: member.user.tag,
-        icon_url: member.user.displayAvatarURL(),
+        name: removedMember.user.tag,
+        icon_url: removedMember.user.displayAvatarURL(),
       },
       color: 3_092_790,
       description: `Username: ${userMention(
-        member.user.id,
-      )}\nUser ID: ${inlineCode(member.user.id)}${joinedAt}\nLeft at: ${time(
+        removedMember.user.id,
+      )}\nUser ID: ${inlineCode(
+        removedMember.user.id,
+      )}${joinedAt}\nLeft at: ${time(new Date(), 'f')} (${time(
         new Date(),
-        'f',
-      )} (${time(new Date(), 'R')})`,
+        'R',
+      )})`,
       footer: {
         text: 'User left',
       },
@@ -46,17 +45,28 @@ export const event = {
 
     memberLog.send({ embeds: [userLeaveEmbed] });
 
+    // check if the user was kicked
+    const fetchedLogs = await removedMember.guild.fetchAuditLogs({
+      limit: 1,
+      type: AuditLogEvent.MemberKick,
+    });
+
     const kickLog = fetchedLogs.entries.first();
     if (!kickLog) return;
 
-    const { executor, target, reason } = kickLog;
-    const executingMember = await member.guild.members.fetch(executor.id);
+    const { executor, target } = kickLog;
+    const reason = kickLog.reason || 'No reason provided';
+    const executingMember = await removedMember.guild.members.fetch(
+      executor.id,
+    );
 
-    if (target.id === member.id) {
-      console.log(`${member.user.tag} was kicked from ${member.guild.name}.`);
+    if (target.id === removedMember.id) {
+      console.log(
+        `${removedMember.user.tag} was kicked from ${removedMember.guild.name}.`,
+      );
 
       const kickEmbed = buildModerationEmbed(
-        member,
+        removedMember,
         'Kick',
         reason,
         executingMember,
