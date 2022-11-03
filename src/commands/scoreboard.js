@@ -35,7 +35,17 @@ export const command = {
             .setRequired(true)
             .setAutocomplete(true),
         ),
-    ).addSubcommand(subcommand => subcommand.setName('custom').setDescription('Returns a scoreboard with custom Values.').addStringOption(option => option.setName('objective').setDescription('Objective to search for.')),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('custom')
+        .setDescription('Returns a scoreboard with custom Values.')
+        .addStringOption((option) =>
+          option
+            .setName('objective')
+            .setDescription('Objective to search for.'),
+        ),
+    ),
   async execute(interaction) {
     // TODO: scoreboard for a player only
     // TODO: same display as ingame (only 15 players) or full display
