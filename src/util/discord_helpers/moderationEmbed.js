@@ -1,22 +1,43 @@
 import { EmbedBuilder, inlineCode } from 'discord.js';
 
-const buildModerationEmbed = (action, member, executor) => {
-  const memberID = member.user.id;
+const buildModerationEmbed = (
+  member,
+  action,
+  reason,
+  executor,
+  expiration = null,
+) => {
+  const description = {
+    member: `**Member**: ${member.user.tag} (${inlineCode(member.user.id)})`,
+    action: `**Action**: ${action}`,
+    reason: `**Reason**: ${reason}`,
+    expiration: `**Expiration**: ${expiration}`,
+  };
+
   const moderationEmbed = new EmbedBuilder({
     author: {
       name: executor.user.tag,
       icon_url: executor.user.displayAvatarURL(),
     },
+    footer: { text: 'Moderation Logger' },
     timestamp: Date.now(),
   });
 
-  if (action === 'kick') {
+  if (action === 'Kick' || action === 'Ban') {
     moderationEmbed
       .setColor('Orange')
       .setDescription(
-        `**Member**: ${userMention(
-          memberID,
-        )} (${id})\n**Action**: Kick\n**Reason**: ${reason}`,
+        `${description.member}\n${description.action}\n${description.reason}`,
+      );
+  } else if (action === 'Timeout') {
+    moderationEmbed
+      .setColor('Yellow')
+      .setDescription(
+        `${description.member}\n${description.action}\n${description.reason}\n${description.expiration}`,
       );
   }
+
+  return moderationEmbed;
 };
+
+export default buildModerationEmbed;
