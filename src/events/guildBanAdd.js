@@ -16,14 +16,7 @@ export const event = {
     );
     const banLog = fetchedLogs.entries.first();
 
-    if (!banLog) {
-      modLogChannel.send(
-        `${inlineCode(ban.user.tag)} (<@${ban.user.id}>) was banned from ${
-          ban.guild.name
-        } but no audit log could be found.`,
-      );
-      return;
-    }
+    if (!banLog) return;
 
     const { executor, target } = banLog;
 
