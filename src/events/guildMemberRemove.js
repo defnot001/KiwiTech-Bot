@@ -6,6 +6,7 @@ import {
   inlineCode,
 } from 'discord.js';
 import logChannels from '../util/discord_helpers/loggers.js';
+import moderationAction from '../util/discord_helpers/moderationAction.js';
 import buildModerationEmbed from '../util/discord_helpers/moderationEmbed.js';
 
 export const event = {
@@ -52,6 +53,7 @@ export const event = {
     });
 
     const kickLog = fetchedLogs.entries.first();
+    console.log(kickLog.action);
     if (!kickLog) return;
 
     const { executor, target } = kickLog;
@@ -60,14 +62,14 @@ export const event = {
       executor.id,
     );
 
-    if (target.id === removedMember.id) {
+    if (target.id === removedMember.id && kickLog.action === 20) {
       console.log(
         `${removedMember.user.tag} was kicked from ${removedMember.guild.name}.`,
       );
 
       const kickEmbed = buildModerationEmbed(
         removedMember,
-        'Kick',
+        moderationAction.kick,
         reason,
         executingMember,
       );
