@@ -1,19 +1,15 @@
 {
   "name": "koalabot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Discord.js v14 Bot for managing Minecraft Servers.",
-  "main": "src/index.js",
-  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node src/index.js",
-    "start:dev": "nodemon src/index.js",
-    "deploy-commands": "node src/util/deploy-commands.js",
-    "delete-commands": "node src/util/delete-commands.js",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "prettier": "npx prettier --check ./src",
-    "prettier:fix": "npx prettier --write ./src",
-    "format:all": "npm run prettier:fix && npm run lint:fix"
+    "dev": "ts-node src/index.ts",
+    "test": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
+    "deploy": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,19 +22,23 @@
   },
   "homepage": "https://github.com/defnot001/KoalaBot#readme",
   "dependencies": {
-    "@discordjs/rest": "^1.1.0",
-    "canvas": "^2.10.1",
-    "discord.js": "^14.3.0",
+    "canvas": "^2.10.2",
+    "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
+    "glob": "^8.0.3",
     "minecraft-server-util": "^5.3.1",
-    "nodeactyl": "^3.3.0",
+    "ptero-client": "^1.0.3",
     "save-dev": "^0.0.1-security"
   },
   "devDependencies": {
-    "eslint": "^8.23.1",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.5.0",
-    "nodemon": "^2.0.19",
-    "prettier": "^2.7.1"
+    "@types/glob": "^8.0.0",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "eslint": "^8.31.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.0",
+    "typescript": "^4.9.4",
+    "vitest": "^0.26.3"
   }
 }
