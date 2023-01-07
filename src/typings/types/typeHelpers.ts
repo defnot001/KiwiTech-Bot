@@ -10,3 +10,7 @@ export type MCServerSubcommand =
   | 'stats';
 
 export type TServerChoice = keyof typeof config.mcConfig;
+export type TConfig = typeof config;
+export type TConfigKeys = keyof TConfig;
+export type TChannelName = keyof TConfig['channels'];
+export type TModerationAction = 'kick' | 'ban' | 'unban';

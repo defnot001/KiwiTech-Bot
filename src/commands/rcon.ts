@@ -8,7 +8,7 @@ import { Command } from '../structures/Command';
 import type { TServerChoice } from '../typings/types/typeHelpers';
 import getErrorMessage from '../util/functions/errors';
 import { getServerChoices } from '../util/functions/helpers';
-import { errorLog } from '../util/functions/loggers';
+import { createInteractionErrorLog } from '../util/functions/loggers';
 import { runRconCommand } from '../util/rcon';
 
 export default new Command({
@@ -62,7 +62,7 @@ export default new Command({
       return interaction.editReply(codeBlock(response.toString()));
     } catch (err) {
       getErrorMessage(err);
-      return errorLog({
+      return createInteractionErrorLog({
         interaction: interaction,
         errorMessage: `Failed to execute the command: ${inlineCode(
           command,

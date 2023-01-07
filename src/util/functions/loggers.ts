@@ -1,17 +1,23 @@
-import type { Guild } from 'discord.js';
+import type { Guild, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import { config } from '../../config/config';
-import type { IInteractionErrorOptions } from '../../typings/interfaces/Errors';
+import type {
+  IEventErrorOptions,
+  IInteractionErrorOptions,
+} from '../../typings/interfaces/Errors';
+import type { TChannelName } from '../../typings/types/typeHelpers';
 import { isTextChannel } from './typeChecks';
 
-export const errorLog = async (options: IInteractionErrorOptions) => {
+export async function createInteractionErrorLog(
+  options: IInteractionErrorOptions,
+) {
   const { interaction, errorMessage } = options;
 
   if (!interaction.guild) {
     throw new Error('This interaction was not created in a guild!');
   }
 
-  const errorLog = await getLogChannels(interaction.guild);
+  const botLog = await getTextChannelFromID(interaction.guild, 'botLog');
 
   if (!interaction.client.user) {
     throw new Error('This client does not have a user!');
@@ -38,15 +44,41 @@ export const errorLog = async (options: IInteractionErrorOptions) => {
     timestamp: Date.now(),
   });
 
-  errorLog.send({ embeds: [interactionErrorEmbed] });
-};
+  botLog.send({ embeds: [interactionErrorEmbed] });
+}
 
-export const getLogChannels = async (guild: Guild) => {
-  const errorLogChannel = await guild.channels.fetch(config.channels.botLog);
+export async function createEventErrorLog(options: IEventErrorOptions) {
+  const { client, guild, errorMessage } = options;
+  const botLogChannel = await getTextChannelFromID(guild, 'botLog');
 
-  if (!errorLogChannel || !isTextChannel(errorLogChannel)) {
+  if (!client.user) {
+    throw new Error('This client does not have a user!');
+  }
+
+  const eventErrorEmbed = new EmbedBuilder({
+    author: {
+      name: client.user.username,
+      iconURL: client.user.displayAvatarURL(),
+    },
+    description: `${errorMessage}`,
+    footer: {
+      text: 'KiwiBot Error Logging',
+    },
+    timestamp: Date.now(),
+  });
+
+  botLogChannel.send({ embeds: [eventErrorEmbed] });
+}
+
+export async function getTextChannelFromID(
+  guild: Guild,
+  channel: TChannelName,
+): Promise<TextChannel> {
+  const fetchedChannel = await guild.channels.fetch(config.channels[channel]);
+
+  if (!fetchedChannel || !isTextChannel(fetchedChannel)) {
     throw new Error('Cannot get the error-log channel!');
   }
 
-  return errorLogChannel;
-};
+  return fetchedChannel;
+}

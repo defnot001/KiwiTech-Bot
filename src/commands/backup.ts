@@ -14,7 +14,7 @@ import {
 } from '../util/components/components';
 import getErrorMessage from '../util/functions/errors';
 import { formatBytes, getServerChoices } from '../util/functions/helpers';
-import { errorLog } from '../util/functions/loggers';
+import { createInteractionErrorLog } from '../util/functions/loggers';
 import { ptero } from '../util/pterodactyl';
 
 export default new Command({
@@ -118,7 +118,7 @@ export default new Command({
         return interaction.editReply({ embeds: [backupListEmbed] });
       } catch (err) {
         getErrorMessage(err);
-        return errorLog({
+        return createInteractionErrorLog({
           interaction: interaction,
           errorMessage: `Failed to list backups for ${serverChoice}!`,
         });
@@ -203,7 +203,7 @@ export default new Command({
         }
       } catch (err) {
         getErrorMessage(err);
-        return errorLog({
+        return createInteractionErrorLog({
           interaction: interaction,
           errorMessage: `Failed to create a backup for ${serverChoice}!`,
         });
@@ -269,7 +269,7 @@ export default new Command({
         return interaction.editReply({ embeds: [backupEmbed] });
       } catch (err) {
         getErrorMessage(err);
-        return errorLog({
+        return createInteractionErrorLog({
           interaction: interaction,
           errorMessage: `Failed to get the backup details for ${serverChoice}!`,
         });

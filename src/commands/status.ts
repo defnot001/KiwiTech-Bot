@@ -5,7 +5,7 @@ import { KoalaEmbedBuilder } from '../structures/embeds/KoalaEmbedBuilder';
 import type { TServerChoice } from '../typings/types/typeHelpers';
 import getErrorMessage from '../util/functions/errors';
 import { getServerChoices } from '../util/functions/helpers';
-import { errorLog } from '../util/functions/loggers';
+import { createInteractionErrorLog } from '../util/functions/loggers';
 import { getServerStatus, queryMobcap, queryMspt } from '../util/rcon';
 
 export default new Command({
@@ -94,7 +94,7 @@ export default new Command({
       return interaction.editReply({ embeds: [statusEmbed] });
     } catch (err) {
       getErrorMessage(err);
-      return errorLog({
+      return createInteractionErrorLog({
         interaction: interaction,
         errorMessage: `Failed to get the status of ${choice}!`,
       });

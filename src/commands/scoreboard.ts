@@ -4,7 +4,7 @@ import dictionary119 from '../assets/dictionary_1.19';
 import { Command } from '../structures/Command';
 import { scoreboardToImage } from '../util/canvas';
 import getErrorMessage from '../util/functions/errors';
-import { errorLog } from '../util/functions/loggers';
+import { createInteractionErrorLog } from '../util/functions/loggers';
 import { queryScoreboard } from '../util/rcon';
 
 const objectives = [
@@ -90,7 +90,7 @@ export default new Command({
       return interaction.editReply({ files: [{ attachment: buffer }] });
     } catch (err) {
       getErrorMessage(err);
-      return errorLog({
+      return createInteractionErrorLog({
         interaction: interaction,
         errorMessage: `Failed to get the scoreboard ${scoreboardName} from the server!`,
       });

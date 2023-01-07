@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from '../structures/Command';
 import getErrorMessage from '../util/functions/errors';
-import { errorLog } from '../util/functions/loggers';
+import { createInteractionErrorLog } from '../util/functions/loggers';
 
 export default new Command({
   name: 'animal',
@@ -43,7 +43,7 @@ export default new Command({
       return interaction.editReply({ files: [imageURL] });
     } catch (err) {
       getErrorMessage(err);
-      return errorLog({
+      return createInteractionErrorLog({
         interaction: interaction,
         errorMessage: `Failed to get an image for ${choice}!`,
       });
