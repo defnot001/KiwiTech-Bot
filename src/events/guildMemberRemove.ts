@@ -1,7 +1,7 @@
 import { AuditLogEvent, inlineCode, time, userMention } from 'discord.js';
-import { Event } from '../structures/Event';
 import { JoinLeaveEmbedBuilder } from '../structures/embeds/JoinLeaveEmbedBuilder';
 import { ModerationEmbedBuilder } from '../structures/embeds/ModerationEmbedBuilder';
+import { Event } from '../structures/Event';
 import { getJoinedAtComponent } from '../util/functions/helpers';
 import {
   createEventErrorLog,
@@ -37,9 +37,7 @@ export default new Event('guildMemberRemove', async (member) => {
 
     const kickLog = fetchedLogs.entries.first();
 
-    if (!kickLog) {
-      throw new Error('Cannot find kickLog.');
-    }
+    if (!kickLog) return;
 
     const { executor, target, action, reason } = kickLog;
 
