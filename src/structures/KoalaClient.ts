@@ -43,19 +43,19 @@ export class KoalaClient extends Client {
 
   async registerCommands({ commands, guildID }: IRegisterCommandOptions) {
     if (guildID) {
-      const guild = this.guilds.cache.get(guildID);
+      const registerGuild = this.guilds.cache.get(guildID);
 
-      if (!guild) {
-        throw new Error(`Cannot find the guild to register the commands to!`);
+      if (!registerGuild) {
+        throw new Error('Cannot find the guild to register the commands to!');
       }
 
-      guild.commands.set(commands);
+      registerGuild.commands.set(commands);
 
-      console.log(`Registering commands to ${guild.name}...`);
+      console.log(`Registering commands to ${registerGuild.name}...`);
     } else {
       if (!this.application) {
         throw new Error(
-          `Cannot find the application to register the commands to!`,
+          'Cannot find the application to register the commands to!',
         );
       }
 
