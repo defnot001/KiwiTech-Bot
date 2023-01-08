@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/defnot001/KoalaBot#readme",
   "dependencies": {
+    "axios": "^1.2.2",
     "canvas": "^2.10.2",
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
