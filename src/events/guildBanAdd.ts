@@ -1,6 +1,6 @@
 import { AuditLogEvent, inlineCode } from 'discord.js';
-import { Event } from '../structures/Event';
 import { ModerationEmbedBuilder } from '../structures/embeds/ModerationEmbedBuilder';
+import { Event } from '../structures/Event';
 import {
   createEventErrorLog,
   getTextChannelFromID,
@@ -29,7 +29,7 @@ export default new Event('guildBanAdd', async (guildBan) => {
     }
 
     const executingMember = await ban.guild.members.fetch(executor.id);
-    const modLog = await getTextChannelFromID(ban.guild, 'botLog');
+    const modLog = await getTextChannelFromID(ban.guild, 'modLog');
 
     if (target.id === ban.user.id) {
       const banEmbed = new ModerationEmbedBuilder({
