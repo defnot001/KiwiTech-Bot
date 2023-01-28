@@ -1,10 +1,7 @@
 import { AuditLogEvent, inlineCode } from 'discord.js';
-import { Event } from '../structures/Event';
-import { ModerationEmbedBuilder } from '../structures/embeds/ModerationEmbedBuilder';
-import {
-  createEventErrorLog,
-  getTextChannelFromID,
-} from '../util/functions/loggers';
+import { Event } from 'djs-handlers';
+import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
+import { createEventErrorLog, getTextChannelFromID } from '../util/loggers';
 
 export default new Event('guildBanRemove', async (guildUnban) => {
   try {

@@ -1,9 +1,9 @@
 import { EmbedBuilder, inlineCode } from 'discord.js';
-import { config } from '../../config/config';
+import { config } from '../config/config';
 import type {
   IModerationDescription,
   IModerationEmbedOptions,
-} from '../../typings/interfaces/ModerationEmbed';
+} from '../types/discord';
 
 export class ModerationEmbedBuilder extends EmbedBuilder {
   constructor(options: IModerationEmbedOptions) {

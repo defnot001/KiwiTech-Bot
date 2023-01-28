@@ -1,11 +1,11 @@
 import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
+import { Command } from 'djs-handlers';
+import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
-import { Command } from '../structures/Command';
-import { KoalaEmbedBuilder } from '../structures/embeds/KoalaEmbedBuilder';
-import type { TServerChoice } from '../typings/types/typeHelpers';
-import getErrorMessage from '../util/functions/errors';
-import { getServerChoices } from '../util/functions/helpers';
-import { createInteractionErrorLog } from '../util/functions/loggers';
+import type { TServerChoice } from '../types/minecraft';
+import getErrorMessage from '../util/errors';
+import { getServerChoices } from '../util/helpers';
+import { createInteractionErrorLog } from '../util/loggers';
 import { getWhitelist, runRconCommand } from '../util/rcon';
 
 export default new Command({

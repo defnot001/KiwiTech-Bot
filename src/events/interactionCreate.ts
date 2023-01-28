@@ -2,10 +2,10 @@ import type {
   CommandInteractionOptionResolver,
   TextBasedChannel,
 } from 'discord.js';
+import type { IExtendedInteraction } from 'djs-handlers';
+import { Event } from 'djs-handlers';
 import { client } from '..';
-import { Event } from '../structures/Event';
-import type IExtendedInteraction from '../typings/interfaces/ExtendedInteraction';
-import getErrorMessage from '../util/functions/errors';
+import getErrorMessage from '../util/errors';
 
 export default new Event('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;

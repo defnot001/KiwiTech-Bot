@@ -1,10 +1,7 @@
 import { AuditLogEvent, inlineCode } from 'discord.js';
-import { ModerationEmbedBuilder } from '../structures/embeds/ModerationEmbedBuilder';
-import { Event } from '../structures/Event';
-import {
-  createEventErrorLog,
-  getTextChannelFromID,
-} from '../util/functions/loggers';
+import { Event } from 'djs-handlers';
+import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
+import { createEventErrorLog, getTextChannelFromID } from '../util/loggers';
 export default new Event('guildBanAdd', async (guildBan) => {
   try {
     const ban = guildBan.partial ? await guildBan.fetch() : guildBan;

@@ -1,24 +1,21 @@
 import { ApplicationCommandOptionType, bold } from 'discord.js';
+import { Command } from 'djs-handlers';
+import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
-import { Command } from '../structures/Command';
-import { KoalaEmbedBuilder } from '../structures/embeds/KoalaEmbedBuilder';
-import type {
-  MCServerSubcommand,
-  TServerChoice,
-} from '../typings/types/typeHelpers';
+import type { MCServerSubcommand, TServerChoice } from '../types/minecraft';
 import {
   confirmCancelRow,
   getButtonCollector,
   mcServerChoice,
-} from '../util/components/components';
-import getErrorMessage from '../util/functions/errors';
+} from '../util/components';
+import getErrorMessage from '../util/errors';
 import formatTime, {
   capitalizeFirstLetter,
   formatBytes,
   getAction,
   performAction,
-} from '../util/functions/helpers';
-import { createInteractionErrorLog } from '../util/functions/loggers';
+} from '../util/helpers';
+import { createInteractionErrorLog } from '../util/loggers';
 import { ptero } from '../util/pterodactyl';
 
 export default new Command({

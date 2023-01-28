@@ -1,6 +1,10 @@
-import { APIEmbed, EmbedBuilder, EmbedData, type User } from 'discord.js';
-import { config } from '../../config/config';
-
+import {
+  EmbedBuilder,
+  type APIEmbed,
+  type EmbedData,
+  type User,
+} from 'discord.js';
+import { config } from '../config/config';
 export class KoalaEmbedBuilder extends EmbedBuilder {
   constructor(user: User, data?: EmbedData | APIEmbed) {
     super(data);

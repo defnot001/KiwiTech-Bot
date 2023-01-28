@@ -4,9 +4,9 @@ import {
   PartialGuildMember,
   time,
 } from 'discord.js';
-import { config } from '../../config/config';
-import type { TPowerActionNoStart } from '../../typings/types/typeHelpers';
-import { ptero } from '../pterodactyl';
+import { config } from '../config/config';
+import type { TPowerActionNoStart } from '../types/minecraft';
+import { ptero } from './pterodactyl';
 
 export function getServerChoices(): ApplicationCommandOptionChoiceData<string>[] {
   const choices = [];

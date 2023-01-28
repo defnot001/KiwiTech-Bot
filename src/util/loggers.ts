@@ -1,12 +1,12 @@
 import type { Guild, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
-import { config } from '../../config/config';
+import { config } from '../config/config';
+import type { TChannelName } from '../types/discord';
 import type {
   IEventErrorOptions,
   IInteractionErrorOptions,
-} from '../../typings/interfaces/Errors';
-import type { TChannelName } from '../../typings/types/typeHelpers';
-import { isTextChannel } from './typeChecks';
+} from '../types/errors';
+import { isTextChannel } from './assertions';
 
 export async function createInteractionErrorLog(
   options: IInteractionErrorOptions,

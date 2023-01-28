@@ -1,6 +1,6 @@
 import { createCanvas, registerFont } from 'canvas';
 import path from 'path';
-import projectPaths from './node/projectPaths';
+import { projectPaths } from '../config/config';
 
 registerFont(path.join(projectPaths.sources, 'assets/minecraft.ttf'), {
   family: 'minecraft',

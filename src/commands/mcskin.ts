@@ -1,10 +1,7 @@
 import axios from 'axios';
 import { ApplicationCommandOptionType, AttachmentBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import type {
-  TAvatarOptions,
-  TMojangUUIDResponse,
-} from '../typings/types/typeHelpers';
+import { Command } from 'djs-handlers';
+import type { TAvatarOptions, TMojangUUIDResponse } from '../types/minecraft';
 
 export default new Command({
   name: 'mcskin',

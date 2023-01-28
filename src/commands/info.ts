@@ -1,19 +1,19 @@
 import {
   ApplicationCommandOptionType,
-  Collection,
-  EmbedField,
-  GuildMember,
-  Role,
-  Snowflake,
-  User,
   escapeMarkdown,
   time,
+  type Collection,
+  type EmbedField,
+  type GuildMember,
+  type Role,
+  type Snowflake,
+  type User,
 } from 'discord.js';
+import { Command } from 'djs-handlers';
+import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
-import { Command } from '../structures/Command';
-import { KoalaEmbedBuilder } from '../structures/embeds/KoalaEmbedBuilder';
-import { capitalizeFirstLetter } from '../util/functions/helpers';
-import { isGuildMember } from '../util/functions/typeChecks';
+import { isGuildMember } from '../util/assertions';
+import { capitalizeFirstLetter } from '../util/helpers';
 
 export default new Command({
   name: 'info',

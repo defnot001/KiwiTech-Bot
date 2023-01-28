@@ -5,8 +5,8 @@ import {
   ComponentType,
   TextBasedChannel,
 } from 'discord.js';
-import type IExtendedInteraction from '../../typings/interfaces/ExtendedInteraction';
-import { getServerChoices } from '../functions/helpers';
+import type { IExtendedInteraction } from 'djs-handlers';
+import { getServerChoices } from './helpers';
 
 const confirmButton = new ButtonBuilder({
   style: ButtonStyle.Success,
@@ -26,7 +26,7 @@ export const confirmCancelRow = new ActionRowBuilder<ButtonBuilder>({
 
 export const mcServerChoice = {
   name: 'server',
-  description: 'The server you want to stop.',
+  description: 'The server you want to target.',
   type: 3,
   required: true,
   choices: [...getServerChoices()],

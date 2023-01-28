@@ -1,6 +1,11 @@
-import type { APIEmbed, EmbedData, GuildMember } from 'discord.js';
-import { EmbedBuilder, PartialGuildMember } from 'discord.js';
-import { config } from '../../config/config';
+import {
+  EmbedBuilder,
+  type APIEmbed,
+  type EmbedData,
+  type GuildMember,
+  type PartialGuildMember,
+} from 'discord.js';
+import { config } from '../config/config';
 
 export class JoinLeaveEmbedBuilder extends EmbedBuilder {
   constructor(

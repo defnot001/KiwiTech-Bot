@@ -1,11 +1,12 @@
 import { ApplicationCommandOptionType } from 'discord.js';
-import { customScoreboards } from '../assets/customScoreboards';
+import { Command } from 'djs-handlers';
 import dictionary119 from '../assets/dictionary_1.19';
-import { Command } from '../structures/Command';
 import { scoreboardToImage } from '../util/canvas';
-import getErrorMessage from '../util/functions/errors';
-import { createInteractionErrorLog } from '../util/functions/loggers';
+import getErrorMessage from '../util/errors';
+import { createInteractionErrorLog } from '../util/loggers';
 import { queryScoreboard } from '../util/rcon';
+
+export const customScoreboards = ['digs', 'deaths', 'bedrock_removed'];
 
 const objectives = [
   ...Object.keys(dictionary119).map((key) => key),

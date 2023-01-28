@@ -1,7 +1,7 @@
-import { RCON, queryFull } from 'minecraft-server-util';
+import { queryFull, RCON } from 'minecraft-server-util';
 import { config } from '../config/config';
-import type { IMobcap } from '../typings/interfaces/RCON';
-import { escapeMarkdown } from './functions/helpers';
+import type { TMobcap } from '../types/minecraft';
+import { escapeMarkdown } from './helpers';
 
 export const getServerStatus = async (host: string, port: number) => {
   return await queryFull(host, port, { enableSRV: true });
@@ -55,7 +55,7 @@ export const queryMobcap = async (
   host: string,
   rconPort: number,
   rconPassword: string,
-): Promise<IMobcap> => {
+) => {
   const dimensions = ['overworld', 'the_nether', 'the_end'];
 
   const mobcap: Record<string, string> = {};
@@ -68,10 +68,10 @@ export const queryMobcap = async (
       .replace(/^.{0,3}| \(.*\)|[[\]]/g, '')
       .replace(/, /g, ' | ');
 
-    mobcap[dim as keyof IMobcap] = data;
+    mobcap[dim as keyof TMobcap] = data;
   }
 
-  const isMobcap = (obj: unknown): obj is IMobcap => {
+  const isMobcap = (obj: unknown): obj is TMobcap => {
     return (
       typeof obj === 'object' &&
       obj !== null &&

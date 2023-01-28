@@ -1,9 +1,9 @@
 import { ApplicationCommandOptionType, userMention } from 'discord.js';
+import { Command } from 'djs-handlers';
 import trialWelcomeMessage from '../assets/welcomeMessage';
+import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
-import { Command } from '../structures/Command';
-import { KoalaEmbedBuilder } from '../structures/embeds/KoalaEmbedBuilder';
-import { isGuildMember } from '../util/functions/typeChecks';
+import { isGuildMember } from '../util/assertions';
 
 export default new Command({
   name: 'trialinfo',

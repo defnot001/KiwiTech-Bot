@@ -1,27 +1,21 @@
-import type { preconfig } from '../../config/config';
+import type { GuildMember, User } from 'discord.js';
+import type { TMCServerConfig } from './minecraft';
 
-export type TPowerAction = 'start' | 'stop' | 'restart' | 'kill';
-export type TPowerActionNoStart = Omit<TPowerAction, 'start'>;
-export type MCServerSubcommand =
-  | 'start'
-  | 'stop'
-  | 'restart'
-  | 'kill'
-  | 'stats';
+export interface IModerationEmbedOptions {
+  target: User;
+  executor: GuildMember;
+  action: TModerationAction;
+  reason?: string | null;
+  expiration?: number | null;
+}
 
-export type TServerChoice = keyof typeof preconfig.mcConfig;
-export type TConfigKeys = keyof TConfig;
-export type TChannelName = keyof TConfig['channels'];
-export type TModerationAction = 'kick' | 'ban' | 'unban';
-export type TAvatarOptions =
-  | '/avatars/'
-  | '/renders/head/'
-  | '/renders/body/'
-  | '/skins/';
-export type TMojangUUIDResponse = {
-  name: string;
-  id: string;
-};
+export interface IModerationDescription {
+  member: string;
+  action: string;
+  reason?: string;
+  expiration?: string;
+}
+
 export type TConfig = {
   bot: {
     readonly token: string;
@@ -67,12 +61,5 @@ export type TConfig = {
   };
 };
 
-export type TMCServerConfig = {
-  readonly host: string;
-  readonly port: number;
-  readonly serverId: string;
-  readonly rconPort: number;
-  readonly rconPasswd: string;
-  readonly operator: boolean;
-  readonly backupLimit: number;
-};
+export type TChannelName = keyof TConfig['channels'];
+export type TModerationAction = 'kick' | 'ban' | 'unban';

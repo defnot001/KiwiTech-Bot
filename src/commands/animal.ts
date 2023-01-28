@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { ApplicationCommandOptionType } from 'discord.js';
-import { Command } from '../structures/Command';
-import getErrorMessage from '../util/functions/errors';
-import { createInteractionErrorLog } from '../util/functions/loggers';
+import { Command } from 'djs-handlers';
+import getErrorMessage from '../util/errors';
+import { createInteractionErrorLog } from '../util/loggers';
 
 export default new Command({
   name: 'animal',

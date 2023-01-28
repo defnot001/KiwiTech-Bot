@@ -1,7 +1,7 @@
+import { Event } from 'djs-handlers';
 import { client } from '..';
-import { customScoreboards } from '../assets/customScoreboards';
 import dictionary119 from '../assets/dictionary_1.19';
-import { Event } from '../structures/Event';
+import { customScoreboards } from '../commands/scoreboard';
 
 const objectives = Object.keys(dictionary119).map((key) => key);
 

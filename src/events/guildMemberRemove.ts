@@ -1,12 +1,9 @@
 import { AuditLogEvent, inlineCode, time, userMention } from 'discord.js';
-import { JoinLeaveEmbedBuilder } from '../structures/embeds/JoinLeaveEmbedBuilder';
-import { ModerationEmbedBuilder } from '../structures/embeds/ModerationEmbedBuilder';
-import { Event } from '../structures/Event';
-import { getJoinedAtComponent } from '../util/functions/helpers';
-import {
-  createEventErrorLog,
-  getTextChannelFromID,
-} from '../util/functions/loggers';
+import { Event } from 'djs-handlers';
+import { JoinLeaveEmbedBuilder } from '../classes/JoinLeaveEmbedBuilder';
+import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
+import { getJoinedAtComponent } from '../util/helpers';
+import { createEventErrorLog, getTextChannelFromID } from '../util/loggers';
 
 export default new Event('guildMemberRemove', async (member) => {
   try {

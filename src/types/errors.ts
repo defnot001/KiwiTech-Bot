@@ -1,5 +1,5 @@
 import type { Client, Guild } from 'discord.js';
-import type IExtendedInteraction from './ExtendedInteraction';
+import type { IExtendedInteraction } from 'djs-handlers';
 
 export interface IInteractionErrorOptions {
   interaction: IExtendedInteraction;
