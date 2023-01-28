@@ -4,7 +4,7 @@
   "description": "Discord.js v14 Bot for managing Minecraft Servers.",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "dev": "ts-node-esm src/index.ts",
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -25,6 +25,7 @@
     "axios": "^1.2.2",
     "canvas": "^2.10.2",
     "discord.js": "^14.6.0",
+    "djs-handlers": "^1.0.5",
     "dotenv": "^16.0.3",
     "glob": "^8.0.3",
     "minecraft-server-util": "^5.3.1",
