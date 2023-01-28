@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
+import { getEmojis } from '../util/components';
 
 export default new Command({
   name: 'poll',
@@ -47,28 +48,23 @@ export default new Command({
     question = !question.endsWith('?') ? question + '?' : question;
 
     if (answerType === 'yesno') {
-      const frogYes = interaction.client.emojis.cache.get(
-        '1068981052623831142',
-      );
-      const frogNo = interaction.client.emojis.cache.get('1068981128771424347');
+      try {
+        const pollEmbed = new KoalaEmbedBuilder(interaction.user, {
+          title: question,
+        });
 
-      if (!frogYes || !frogNo) {
-        return interaction.reply('Cannot find required emojis!');
+        const message = await interaction.reply({
+          embeds: [pollEmbed],
+          fetchReply: true,
+        });
+
+        const { frogYes, frogNo } = getEmojis(interaction.client);
+
+        await message.react(frogYes);
+        return message.react(frogNo);
+      } catch (err) {
+        return interaction.reply('Cannot find emojis!');
       }
-
-      const pollEmbed = new KoalaEmbedBuilder(interaction.user, {
-        title: question,
-      });
-
-      const message = await interaction.reply({
-        embeds: [pollEmbed],
-        fetchReply: true,
-      });
-
-      await message.react(frogYes);
-      await message.react(frogNo);
-
-      return;
     } else {
       if (!answers) {
         return interaction.reply('Please specify answers!');

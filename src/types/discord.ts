@@ -1,4 +1,4 @@
-import type { GuildMember, User } from 'discord.js';
+import type { GuildEmoji, GuildMember, User } from 'discord.js';
 import type { TMCServerConfig } from './minecraft';
 
 export interface IModerationEmbedOptions {
@@ -51,6 +51,8 @@ export type TConfig = {
     readonly kiwi: string;
     readonly owoKiwi: string;
     readonly froghypers: string;
+    readonly frogYes: string;
+    readonly frogNo: string;
   };
   mcConfig: {
     readonly smp: TMCServerConfig;
@@ -63,3 +65,6 @@ export type TConfig = {
 
 export type TChannelName = keyof TConfig['channels'];
 export type TModerationAction = 'kick' | 'ban' | 'unban';
+export type TEmojis = {
+  [key in keyof TConfig['emoji']]: GuildEmoji;
+};

@@ -1,9 +1,9 @@
 import { ApplicationCommandOptionType, userMention } from 'discord.js';
 import { Command } from 'djs-handlers';
-import trialWelcomeMessage from '../assets/welcomeMessage';
+import { getTrialWelcomeMessage } from '../assets/welcomeMessage';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
-import { config } from '../config/config';
 import { isGuildMember } from '../util/assertions';
+import { getEmojis } from '../util/components';
 
 export default new Command({
   name: 'trialinfo',
@@ -26,12 +26,14 @@ export default new Command({
       });
     }
 
+    const { kiwi } = getEmojis(interaction.client);
+
     const trialEmbed = new KoalaEmbedBuilder(interaction.user, {
-      title: `${config.emoji.kiwi}  Welcome to KiwiTech ${target.user.username}!  ${config.emoji.kiwi}`,
+      title: `${kiwi}  Welcome to KiwiTech ${target.user.username}!  ${kiwi}`,
       thumbnail: {
         url: target.user.displayAvatarURL(),
       },
-      fields: trialWelcomeMessage,
+      fields: getTrialWelcomeMessage(interaction.client),
     });
 
     await interaction.reply({
