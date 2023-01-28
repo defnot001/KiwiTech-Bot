@@ -3,3 +3,4 @@ dist
 .env
 src/config/config.ts
 .DS_Store
+welcomeMessage.ts
