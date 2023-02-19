@@ -77,7 +77,7 @@ export async function getTextChannelFromID(
   const fetchedChannel = await guild.channels.fetch(config.channels[channel]);
 
   if (!fetchedChannel || !isTextChannel(fetchedChannel)) {
-    throw new Error('Cannot get the error-log channel!');
+    throw new Error('Failed to fetch text channel!');
   }
 
   return fetchedChannel;
