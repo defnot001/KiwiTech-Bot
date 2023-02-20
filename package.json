@@ -4,12 +4,12 @@
   "description": "Discord.js v14 Bot for managing Minecraft Servers.",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-esm src/index.ts",
+    "dev": "NODE_ENV=development ts-node-esm src/index.ts",
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
-    "deploy": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && node dist/index.js"
+    "deploy": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && NODE_ENV=production node dist/index.js"
   },
   "repository": {
     "type": "git",
