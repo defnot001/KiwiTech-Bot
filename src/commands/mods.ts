@@ -5,13 +5,14 @@ import { config } from '../config/config';
 import { mcServerChoice } from '../util/components';
 import getErrorMessage from '../util/errors';
 import { createInteractionErrorLog } from '../util/loggers';
-import { ptero } from '../util/pterodactyl';
+import { getModFiles, ptero } from '../util/pterodactyl';
 
 const modnameOption = {
   name: 'modname',
-  description: 'The name of the mod. Can be partial.',
+  description: 'The name of the mod.',
   type: 3,
   required: true,
+  autocomplete: true,
 };
 
 export default new Command({
@@ -57,11 +58,7 @@ export default new Command({
     }
 
     try {
-      const modFiles = await (
-        await ptero.files.list(serverID, '/mods')
-      ).filter((mod) => {
-        return mod.is_file;
-      });
+      const modFiles = await getModFiles(serverChoice);
 
       if (modFiles.length === 0) {
         return interaction.editReply(
