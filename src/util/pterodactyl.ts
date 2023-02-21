@@ -38,3 +38,18 @@ export async function getModNames(serverChoice: TServerChoice) {
     disabled: mods.disabled.map((mod) => mod.name.replace('.disabled', '')),
   };
 }
+
+export async function getBackups(serverChoice: TServerChoice) {
+  const backups = await ptero.backups.list(
+    config.mcConfig[serverChoice].serverId,
+  );
+
+  const backupMap = new Map(
+    backups.data.reverse().map((backup) => [backup.name, backup]),
+  );
+
+  return {
+    backups: backupMap,
+    meta: backups.meta,
+  };
+}
