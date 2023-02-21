@@ -2,8 +2,9 @@ import { Event } from 'djs-handlers';
 import { client } from '..';
 import dictionary119 from '../assets/dictionary_1.19';
 import { customScoreboards } from '../commands/scoreboard';
+import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
-import { getModNames } from '../util/pterodactyl';
+import { getModNames, ptero } from '../util/pterodactyl';
 
 export default new Event('interactionCreate', async (interaction) => {
   if (!interaction.isAutocomplete()) return;
@@ -32,28 +33,42 @@ export default new Event('interactionCreate', async (interaction) => {
     if (!action) return interaction.respond([]);
 
     if (action === 'custom') {
-      interaction.respond(mapChoices(customScoreboards));
+      return interaction.respond(mapChoices(customScoreboards));
     } else {
       const targetObjectives = objectives
         .filter((obj) => obj.startsWith(action))
         .map((item) => item.replace(action, ''));
 
-      interaction.respond(mapChoices(targetObjectives));
+      return interaction.respond(mapChoices(targetObjectives));
     }
-  } else if (interaction.commandName === 'mods') {
-    const subcommand = interaction.options.getSubcommand();
-    const serverChoice = interaction.options.getString('server') as
-      | TServerChoice
-      | undefined;
+  }
 
-    if (!subcommand || !serverChoice) {
-      return interaction.respond([]);
-    }
+  const subcommand = interaction.options.getSubcommand();
+  const serverChoice = interaction.options.getString('server') as
+    | TServerChoice
+    | undefined;
 
+  if (!subcommand || !serverChoice) {
+    return interaction.respond([]);
+  }
+
+  if (interaction.commandName === 'mods') {
     const modNames = await getModNames(serverChoice);
     const modNamesChoice =
       subcommand === 'enable' ? modNames.disabled : modNames.enabled;
 
     return interaction.respond(mapChoices(modNamesChoice));
+  }
+
+  if (interaction.commandName === 'backup') {
+    const backupListResponse = await ptero.backups.list(
+      config.mcConfig[serverChoice].serverId,
+    );
+
+    const backupNames = backupListResponse.data
+      .reverse()
+      .map((backup) => backup.name);
+
+    return interaction.respond(mapChoices(backupNames));
   }
 });
