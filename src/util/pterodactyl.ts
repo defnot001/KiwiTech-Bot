@@ -16,3 +16,25 @@ export async function getModFiles(serverChoice: TServerChoice) {
 
   return modFiles;
 }
+
+async function getMods(serverChoice: TServerChoice) {
+  const modFiles = await getModFiles(serverChoice);
+
+  return {
+    enabled: modFiles.filter((mod) => {
+      return mod.name.endsWith('.jar');
+    }),
+    disabled: modFiles.filter((mod) => {
+      return mod.name.endsWith('.disabled');
+    }),
+  };
+}
+
+export async function getModNames(serverChoice: TServerChoice) {
+  const mods = await getMods(serverChoice);
+
+  return {
+    enabled: mods.enabled.map((mod) => mod.name.replace('.jar', '')),
+    disabled: mods.disabled.map((mod) => mod.name.replace('.disabled', '')),
+  };
+}
