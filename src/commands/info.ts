@@ -21,7 +21,7 @@ export default new Command({
   options: [
     {
       name: 'server',
-      description: 'Get information about the KiwiTech Discord Server.',
+      description: 'Get information about the Discord Server.',
       type: ApplicationCommandOptionType.Subcommand,
     },
     {
@@ -39,12 +39,12 @@ export default new Command({
     },
     {
       name: 'members',
-      description: 'Lists the Members of the KiwiTech Minecraft Servers.',
+      description: 'Lists the Members of the Minecraft Servers.',
       type: ApplicationCommandOptionType.Subcommand,
     },
     {
       name: 'admins',
-      description: 'Lists the Admins of the KiwiTech Minecraft Servers.',
+      description: 'Lists the Admins of the Minecraft Servers.',
       type: ApplicationCommandOptionType.Subcommand,
     },
     {

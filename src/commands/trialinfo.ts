@@ -26,10 +26,19 @@ export default new Command({
       });
     }
 
+    const guild = interaction.guild;
+
+    if (!guild) {
+      return interaction.reply({
+        content: 'This command can only be used in a guild!',
+        ephemeral: true,
+      });
+    }
+
     const { kiwi } = getEmojis(interaction.client);
 
     const trialEmbed = new KoalaEmbedBuilder(interaction.user, {
-      title: `${kiwi}  Welcome to KiwiTech ${target.user.username}!  ${kiwi}`,
+      title: `${kiwi}  Welcome to ${guild.name} ${target.user.username}!  ${kiwi}`,
       thumbnail: {
         url: target.user.displayAvatarURL(),
       },
