@@ -3,9 +3,7 @@ import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
-import getErrorMessage from '../util/errors';
 import { getServerChoices } from '../util/helpers';
-import { createInteractionErrorLog } from '../util/loggers';
 import { getWhitelist, runRconCommand } from '../util/rcon';
 
 export default new Command({
@@ -76,32 +74,24 @@ export default new Command({
         return interaction.editReply('Please specify a server!');
       }
 
-      try {
-        const response = await getWhitelist(host, rconPort, rconPasswd);
+      const response = await getWhitelist(host, rconPort, rconPasswd);
 
-        const whitelist = !response
-          ? `There are no whitelisted players on ${choice}!`
-          : response.join('\n');
+      const whitelist = !response
+        ? `There are no whitelisted players on ${choice}!`
+        : response.join('\n');
 
-        const whitelistEmbed = new KoalaEmbedBuilder(interaction.user, {
-          title: `${choice.toUpperCase()} Whitelist`,
-          description: whitelist,
-        });
+      const whitelistEmbed = new KoalaEmbedBuilder(interaction.user, {
+        title: `${choice.toUpperCase()} Whitelist`,
+        description: whitelist,
+      });
 
-        const iconURL = interaction.guild.iconURL();
+      const iconURL = interaction.guild.iconURL();
 
-        if (iconURL) {
-          whitelistEmbed.setThumbnail(iconURL);
-        }
-
-        return interaction.editReply({ embeds: [whitelistEmbed] });
-      } catch (err) {
-        getErrorMessage(err);
-        return createInteractionErrorLog({
-          interaction: interaction,
-          errorMessage: `Failed to get the whitelist for ${choice}!`,
-        });
+      if (iconURL) {
+        whitelistEmbed.setThumbnail(iconURL);
       }
+
+      return interaction.editReply({ embeds: [whitelistEmbed] });
     } else if (subcommand === 'add' || subcommand === 'remove') {
       const ign = args.getString('ign');
 
@@ -114,66 +104,50 @@ export default new Command({
       const whitelistCheck: [string, string][] = [];
       const opCheck: [string, string][] = [];
 
-      try {
-        for await (const server of servers) {
-          const { host, rconPort, rconPasswd } =
-            config.mcConfig[server as TServerChoice];
+      for await (const server of servers) {
+        const { host, rconPort, rconPasswd } =
+          config.mcConfig[server as TServerChoice];
 
-          const whitelistCommand = `whitelist ${subcommand} ${ign}`;
+        const whitelistCommand = `whitelist ${subcommand} ${ign}`;
 
-          const whitelist = await runRconCommand(
+        const whitelist = await runRconCommand(
+          host,
+          rconPort,
+          rconPasswd,
+          whitelistCommand,
+        );
+
+        whitelistCheck.push([server, whitelist]);
+
+        if (config.mcConfig[server as TServerChoice].operator) {
+          const action = subcommand === 'add' ? 'op' : 'deop';
+          const opCommand = `${action} ${ign}`;
+
+          const op = await runRconCommand(
             host,
             rconPort,
             rconPasswd,
-            whitelistCommand,
+            opCommand,
           );
 
-          whitelistCheck.push([server, whitelist]);
-
-          if (config.mcConfig[server as TServerChoice].operator) {
-            const action = subcommand === 'add' ? 'op' : 'deop';
-            const opCommand = `${action} ${ign}`;
-
-            const op = await runRconCommand(
-              host,
-              rconPort,
-              rconPasswd,
-              opCommand,
-            );
-
-            opCheck.push([server, op]);
-          }
+          opCheck.push([server, op]);
         }
-        const successMessage =
-          subcommand === 'add'
-            ? `Successfully added ${inlineCode(ign)} to the whitelist on ${
-                whitelistCheck.length
-              } servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
-                opCheck.length
-              } servers.`
-            : `Successfully removed ${inlineCode(ign)} from the whitelist on ${
-                whitelistCheck.length
-              } servers.\nSuccessfully removed ${inlineCode(
-                ign,
-              )} as an operator on ${opCheck.length} servers.`;
-
-        return interaction.editReply(successMessage);
-      } catch (err) {
-        const errorMessage =
-          subcommand === 'add'
-            ? `Failed to whitelist and/or op ${inlineCode(
-                ign,
-              )} on one or more servers!`
-            : `Failed to unwhitelist and/or deop ${inlineCode(
-                ign,
-              )} on one or more servers!`;
-
-        getErrorMessage(err);
-        return createInteractionErrorLog({
-          interaction: interaction,
-          errorMessage: errorMessage,
-        });
       }
+      const successMessage =
+        subcommand === 'add'
+          ? `Successfully added ${inlineCode(ign)} to the whitelist on ${
+              whitelistCheck.length
+            } servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
+              opCheck.length
+            } servers.`
+          : `Successfully removed ${inlineCode(ign)} from the whitelist on ${
+              whitelistCheck.length
+            } servers.\nSuccessfully removed ${inlineCode(
+              ign,
+            )} as an operator on ${opCheck.length} servers.`;
+
+      return interaction.editReply(successMessage);
     }
+    return;
   },
 });

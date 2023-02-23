@@ -62,7 +62,7 @@ export async function createEventErrorLog(options: IEventErrorOptions) {
     },
     description: `${errorMessage}`,
     footer: {
-      text: 'KiwiBot Error Logging',
+      text: 'Error Logging',
     },
     timestamp: Date.now(),
   });

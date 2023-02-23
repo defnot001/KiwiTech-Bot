@@ -48,9 +48,7 @@ export default new Event('interactionCreate', async (interaction) => {
     | TServerChoice
     | undefined;
 
-  if (!subcommand || !serverChoice) {
-    return interaction.respond([]);
-  }
+  if (!subcommand || !serverChoice) return interaction.respond([]);
 
   if (interaction.commandName === 'mods') {
     const modNames = await getModNames(serverChoice);

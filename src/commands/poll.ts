@@ -48,23 +48,19 @@ export default new Command({
     question = !question.endsWith('?') ? question + '?' : question;
 
     if (answerType === 'yesno') {
-      try {
-        const pollEmbed = new KoalaEmbedBuilder(interaction.user, {
-          title: question,
-        });
+      const pollEmbed = new KoalaEmbedBuilder(interaction.user, {
+        title: question,
+      });
 
-        const message = await interaction.reply({
-          embeds: [pollEmbed],
-          fetchReply: true,
-        });
+      const message = await interaction.reply({
+        embeds: [pollEmbed],
+        fetchReply: true,
+      });
 
-        const { frogYes, frogNo } = getEmojis(interaction.client);
+      const { frogYes, frogNo } = getEmojis(interaction.client);
 
-        await message.react(frogYes);
-        return message.react(frogNo);
-      } catch (err) {
-        return interaction.reply('Cannot find emojis!');
-      }
+      await message.react(frogYes);
+      return message.react(frogNo);
     } else {
       if (!answers) {
         return interaction.reply('Please specify answers!');

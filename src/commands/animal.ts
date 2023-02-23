@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
-import getErrorMessage from '../util/errors';
-import { createInteractionErrorLog } from '../util/loggers';
 
 export default new Command({
   name: 'animal',
@@ -36,17 +34,9 @@ export default new Command({
       dog: 'https://api.thedogapi.com/v1/images/search',
     } as const;
 
-    try {
-      const { data } = await axios.get(apiURL[choice as keyof typeof apiURL]);
-      const imageURL: string = choice === 'fox' ? data.image : data[0].url;
+    const { data } = await axios.get(apiURL[choice as keyof typeof apiURL]);
+    const imageURL: string = choice === 'fox' ? data.image : data[0].url;
 
-      return interaction.editReply({ files: [imageURL] });
-    } catch (err) {
-      getErrorMessage(err);
-      return createInteractionErrorLog({
-        interaction: interaction,
-        errorMessage: `Failed to get an image for ${choice}!`,
-      });
-    }
+    return interaction.editReply({ files: [imageURL] });
   },
 });
