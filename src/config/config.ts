@@ -45,10 +45,14 @@ export const preconfig = {
     resources: env['CHANNEL_RESOURCES'],
     serverInfo: env['CHANNEL_SERVERINFO'],
     todo: env['CHANNEL_TODO'],
+    todoLog: env['CHANNEL_TODO_LOG'],
   },
   roles: {
     members: env['ROLE_MEMBER'],
     admins: env['ROLE_ADMIN'],
+  },
+  webhooks: {
+    todo: env['TODO_WEBHOOK_URL'],
   },
   embedColors: {
     default: 3_517_048,
@@ -57,6 +61,8 @@ export const preconfig = {
     orange: 16_737_843,
     yellow: 16_769_536,
     green: 6_736_998,
+    darkpurple: 3_866_688,
+    purple: 5_243_182,
   },
   emoji: {
     kiwi: env['EMOJI_KIWI'],
