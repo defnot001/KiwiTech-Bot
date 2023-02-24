@@ -4,6 +4,7 @@ import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
 import { getServerChoices } from '../util/helpers';
+import { handleInteractionError } from '../util/loggers';
 import { getWhitelist, runRconCommand } from '../util/rcon';
 
 export default new Command({
@@ -65,89 +66,99 @@ export default new Command({
       return interaction.reply('This command can only be used in a guild.');
     }
 
-    if (subcommand === 'list') {
-      const choice = args.getString('server');
-      const { host, rconPort, rconPasswd } =
-        config.mcConfig[choice as TServerChoice];
+    const choice = args.getString('server');
 
-      if (!choice) {
-        return interaction.editReply('Please specify a server!');
-      }
+    if (!choice) {
+      return interaction.editReply('Please specify a server!');
+    }
 
-      const response = await getWhitelist(host, rconPort, rconPasswd);
-
-      const whitelist = !response
-        ? `There are no whitelisted players on ${choice}!`
-        : response.join('\n');
-
-      const whitelistEmbed = new KoalaEmbedBuilder(interaction.user, {
-        title: `${choice.toUpperCase()} Whitelist`,
-        description: whitelist,
-      });
-
-      const iconURL = interaction.guild.iconURL();
-
-      if (iconURL) {
-        whitelistEmbed.setThumbnail(iconURL);
-      }
-
-      return interaction.editReply({ embeds: [whitelistEmbed] });
-    } else if (subcommand === 'add' || subcommand === 'remove') {
-      const ign = args.getString('ign');
-
-      if (!ign) {
-        return interaction.editReply('Please provide an in-game name!');
-      }
-
-      const servers = Object.keys(config.mcConfig);
-
-      const whitelistCheck: [string, string][] = [];
-      const opCheck: [string, string][] = [];
-
-      for await (const server of servers) {
+    try {
+      if (subcommand === 'list') {
         const { host, rconPort, rconPasswd } =
-          config.mcConfig[server as TServerChoice];
+          config.mcConfig[choice as TServerChoice];
 
-        const whitelistCommand = `whitelist ${subcommand} ${ign}`;
+        const response = await getWhitelist(host, rconPort, rconPasswd);
 
-        const whitelist = await runRconCommand(
-          host,
-          rconPort,
-          rconPasswd,
-          whitelistCommand,
-        );
+        const whitelist = !response
+          ? `There are no whitelisted players on ${choice}!`
+          : response.join('\n');
 
-        whitelistCheck.push([server, whitelist]);
+        const whitelistEmbed = new KoalaEmbedBuilder(interaction.user, {
+          title: `${choice.toUpperCase()} Whitelist`,
+          description: whitelist,
+        });
 
-        if (config.mcConfig[server as TServerChoice].operator) {
-          const action = subcommand === 'add' ? 'op' : 'deop';
-          const opCommand = `${action} ${ign}`;
+        const iconURL = interaction.guild.iconURL();
 
-          const op = await runRconCommand(
+        if (iconURL) {
+          whitelistEmbed.setThumbnail(iconURL);
+        }
+
+        return interaction.editReply({ embeds: [whitelistEmbed] });
+      } else {
+        const ign = args.getString('ign');
+
+        if (!ign) {
+          return interaction.editReply('Please provide an in-game name!');
+        }
+
+        const servers = Object.keys(config.mcConfig);
+
+        const whitelistCheck: [string, string][] = [];
+        const opCheck: [string, string][] = [];
+
+        for await (const server of servers) {
+          const { host, rconPort, rconPasswd } =
+            config.mcConfig[server as TServerChoice];
+
+          const whitelistCommand = `whitelist ${subcommand} ${ign}`;
+
+          const whitelist = await runRconCommand(
             host,
             rconPort,
             rconPasswd,
-            opCommand,
+            whitelistCommand,
           );
 
-          opCheck.push([server, op]);
-        }
-      }
-      const successMessage =
-        subcommand === 'add'
-          ? `Successfully added ${inlineCode(ign)} to the whitelist on ${
-              whitelistCheck.length
-            } servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
-              opCheck.length
-            } servers.`
-          : `Successfully removed ${inlineCode(ign)} from the whitelist on ${
-              whitelistCheck.length
-            } servers.\nSuccessfully removed ${inlineCode(
-              ign,
-            )} as an operator on ${opCheck.length} servers.`;
+          whitelistCheck.push([server, whitelist]);
 
-      return interaction.editReply(successMessage);
+          if (config.mcConfig[server as TServerChoice].operator) {
+            const action = subcommand === 'add' ? 'op' : 'deop';
+            const opCommand = `${action} ${ign}`;
+
+            const op = await runRconCommand(
+              host,
+              rconPort,
+              rconPasswd,
+              opCommand,
+            );
+
+            opCheck.push([server, op]);
+          }
+        }
+        const successMessage =
+          subcommand === 'add'
+            ? `Successfully added ${inlineCode(ign)} to the whitelist on ${
+                whitelistCheck.length
+              } servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
+                opCheck.length
+              } servers.`
+            : `Successfully removed ${inlineCode(ign)} from the whitelist on ${
+                whitelistCheck.length
+              } servers.\nSuccessfully removed ${inlineCode(
+                ign,
+              )} as an operator on ${opCheck.length} servers.`;
+
+        return interaction.editReply(successMessage);
+      }
+    } catch (err) {
+      return handleInteractionError({
+        interaction,
+        err,
+        message: `There was an error trying to execute the whitlist ${subcommand} command for ${inlineCode(
+          choice,
+        )}`,
+      });
     }
-    return;
   },
 });

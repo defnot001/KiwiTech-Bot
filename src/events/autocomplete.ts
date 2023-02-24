@@ -4,10 +4,13 @@ import dictionary119 from '../assets/dictionary_1.19';
 import { customScoreboards } from '../commands/scoreboard';
 import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
+import { handleEventError } from '../util/loggers';
+import { getAllTodos } from '../util/prisma';
 import { getModNames, ptero } from '../util/pterodactyl';
 
 export default new Event('interactionCreate', async (interaction) => {
   if (!interaction.isAutocomplete()) return;
+  if (!interaction.guild) return;
 
   const command = client.commands.get(interaction.commandName);
 
@@ -26,47 +29,64 @@ export default new Event('interactionCreate', async (interaction) => {
       .map((choice) => ({ name: choice, value: choice }));
   };
 
-  if (interaction.commandName === 'scoreboard') {
-    const objectives = Object.keys(dictionary119).map((key) => key);
-    const action = interaction.options.getString('action');
+  try {
+    if (interaction.commandName === 'scoreboard') {
+      const objectives = Object.keys(dictionary119).map((key) => key);
+      const action = interaction.options.getString('action');
 
-    if (!action) return interaction.respond([]);
+      if (!action) return interaction.respond([]);
 
-    if (action === 'custom') {
-      return interaction.respond(mapChoices(customScoreboards));
-    } else {
-      const targetObjectives = objectives
-        .filter((obj) => obj.startsWith(action))
-        .map((item) => item.replace(action, ''));
+      if (action === 'custom') {
+        return interaction.respond(mapChoices(customScoreboards));
+      } else {
+        const targetObjectives = objectives
+          .filter((obj) => obj.startsWith(action))
+          .map((item) => item.replace(action, ''));
 
-      return interaction.respond(mapChoices(targetObjectives));
+        return interaction.respond(mapChoices(targetObjectives));
+      }
     }
-  }
 
-  const subcommand = interaction.options.getSubcommand();
-  const serverChoice = interaction.options.getString('server') as
-    | TServerChoice
-    | undefined;
+    const subcommand = interaction.options.getSubcommand();
 
-  if (!subcommand || !serverChoice) return interaction.respond([]);
+    if (interaction.commandName === 'todo' && subcommand !== 'add') {
+      const todoList = await getAllTodos();
+      const todoListChoice = todoList.map((todo) => todo.title);
 
-  if (interaction.commandName === 'mods') {
-    const modNames = await getModNames(serverChoice);
-    const modNamesChoice =
-      subcommand === 'enable' ? modNames.disabled : modNames.enabled;
+      return interaction.respond(mapChoices(todoListChoice));
+    }
 
-    return interaction.respond(mapChoices(modNamesChoice));
-  }
+    const serverChoice = interaction.options.getString('server') as
+      | TServerChoice
+      | undefined;
 
-  if (interaction.commandName === 'backup') {
-    const backupListResponse = await ptero.backups.list(
-      config.mcConfig[serverChoice].serverId,
-    );
+    if (!serverChoice) return interaction.respond([]);
 
-    const backupNames = backupListResponse.data
-      .reverse()
-      .map((backup) => backup.name);
+    if (interaction.commandName === 'mods') {
+      const modNames = await getModNames(serverChoice);
+      const modNamesChoice =
+        subcommand === 'enable' ? modNames.disabled : modNames.enabled;
 
-    return interaction.respond(mapChoices(backupNames));
+      return interaction.respond(mapChoices(modNamesChoice));
+    }
+
+    if (interaction.commandName === 'backup') {
+      const backupListResponse = await ptero.backups.list(
+        config.mcConfig[serverChoice].serverId,
+      );
+
+      const backupNames = backupListResponse.data
+        .reverse()
+        .map((backup) => backup.name);
+
+      return interaction.respond(mapChoices(backupNames));
+    }
+  } catch (err) {
+    return handleEventError({
+      err,
+      client: interaction.client,
+      guild: interaction.guild,
+      message: `Something went wrong trying to autocomplete for command ${interaction.commandName}!`,
+    });
   }
 });

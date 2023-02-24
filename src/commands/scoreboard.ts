@@ -1,7 +1,8 @@
-import { ApplicationCommandOptionType } from 'discord.js';
+import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import dictionary119 from '../assets/dictionary_1.19';
 import { scoreboardToImage } from '../util/canvas';
+import { handleInteractionError } from '../util/loggers';
 import { queryScoreboard } from '../util/rcon';
 
 export const customScoreboards = ['digs', 'deaths', 'bedrock_removed'];
@@ -62,29 +63,39 @@ export default new Command({
       return interaction.editReply('This objective does not exist!');
     }
 
-    const scores = await queryScoreboard(scoreboardName);
+    try {
+      const scores = await queryScoreboard(scoreboardName);
 
-    if (!scores) {
-      return interaction.editReply(
-        'There are no entries on that scoreboard yet.',
-      );
+      if (!scores) {
+        return interaction.editReply(
+          'There are no entries on that scoreboard yet.',
+        );
+      }
+
+      const leaderboard = scores.sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+      const choice = choices.find((x) => x.value === action);
+
+      if (!choice) {
+        return interaction.editReply('This action does not exist!');
+      }
+
+      const prettyfiedObjective =
+        action !== 'custom'
+          ? scoreboardName.replace(action, choice.name + ' ')
+          : item;
+
+      const buffer = scoreboardToImage(prettyfiedObjective, leaderboard);
+
+      return interaction.editReply({ files: [{ attachment: buffer }] });
+    } catch (err) {
+      return handleInteractionError({
+        interaction,
+        err,
+        message: `There was an error trying to query scoreboard ${inlineCode(
+          scoreboardName,
+        )}`,
+      });
     }
-
-    const leaderboard = scores.sort((a, b) => b[1] - a[1]).slice(0, 15);
-
-    const choice = choices.find((x) => x.value === action);
-
-    if (!choice) {
-      return interaction.editReply('This action does not exist!');
-    }
-
-    const prettyfiedObjective =
-      action !== 'custom'
-        ? scoreboardName.replace(action, choice.name + ' ')
-        : item;
-
-    const buffer = scoreboardToImage(prettyfiedObjective, leaderboard);
-
-    return interaction.editReply({ files: [{ attachment: buffer }] });
   },
 });
