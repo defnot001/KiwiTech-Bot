@@ -34,10 +34,14 @@ export type TConfig = {
     readonly resources: string;
     readonly serverInfo: string;
     readonly todo: string;
+    readonly todoLog: string;
   };
   roles: {
     readonly members: string;
     readonly admins: string;
+  };
+  webhooks: {
+    todo: string;
   };
   embedColors: {
     readonly default: number;
@@ -46,6 +50,8 @@ export type TConfig = {
     readonly orange: number;
     readonly yellow: number;
     readonly green: number;
+    readonly darkpurple: number;
+    readonly purple: number;
   };
   emoji: {
     readonly kiwi: string;
