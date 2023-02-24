@@ -11,7 +11,9 @@ declare global {
       CHANNEL_INVITE: string;
       CHANNEL_RESOURCES: string;
       CHANNEL_SERVERINFO: string;
+      TODO_WEBHOOK_URL: string;
       CHANNEL_TODO: string;
+      CHANNEL_TODO_LOG: string;
       ROLE_MEMBER: string;
       ROLE_ADMIN: string;
       EMOJI_KIWI: string;
