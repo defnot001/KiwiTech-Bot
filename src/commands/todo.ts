@@ -188,6 +188,13 @@ export default new Command({
         timestamp: new Date(),
       });
 
+      const guildIcon = interaction.guild.iconURL();
+
+      if (guildIcon) {
+        survivalEmbed.setThumbnail(guildIcon);
+        creativeEmbed.setThumbnail(guildIcon);
+      }
+
       await webhook.send({
         embeds: [survivalEmbed, creativeEmbed],
       });
