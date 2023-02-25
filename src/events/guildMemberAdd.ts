@@ -10,10 +10,8 @@ export default new Event('guildMemberAdd', async (member) => {
     const memberLog = await getTextChannelFromID(member.guild, 'memberLog');
     const joinedAt = getJoinedAtComponent(member);
 
-    const accountAge: number =
-      new Date().valueOf() - member.user.createdAt.valueOf();
-
-    const embedColor: number = colorFromDuration(accountAge) || 3_092_790;
+    const accountAge = new Date().valueOf() - member.user.createdAt.valueOf();
+    const embedColor = colorFromDuration(accountAge) || 3_092_790;
 
     const joinEmbed = new JoinLeaveEmbedBuilder(member, 'joined', {
       description: `Username: ${userMention(
@@ -22,8 +20,9 @@ export default new Event('guildMemberAdd', async (member) => {
         member.user.createdAt,
         'f',
       )} (${time(member.user.createdAt, 'R')})`,
-      color: embedColor,
     });
+
+    joinEmbed.setColor(embedColor);
 
     memberLog.send({ embeds: [joinEmbed] });
   } catch (err) {
