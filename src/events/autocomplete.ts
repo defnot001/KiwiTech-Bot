@@ -71,7 +71,9 @@ export default new Event('interactionCreate', async (interaction) => {
         totalWhitelist.push(...whitelistNames);
       }
 
-      const whitelistNames = [...new Set(totalWhitelist)];
+      const whitelistNames = [...new Set(totalWhitelist)].sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase()),
+      );
 
       return interaction.respond(mapChoices(whitelistNames));
     }
