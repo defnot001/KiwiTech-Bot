@@ -3,6 +3,7 @@ import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
 import type { MCServerSubcommand, TServerChoice } from '../types/minecraft';
+import { isTextChannel } from '../util/assertions';
 import {
   confirmCancelRow,
   getButtonCollector,
@@ -69,7 +70,7 @@ export default new Command({
       );
     }
 
-    if (!interaction.channel) {
+    if (!interaction.channel || !isTextChannel(interaction.channel)) {
       return interaction.editReply(
         'This command can only be used in a text channel!',
       );
@@ -172,6 +173,12 @@ export default new Command({
         });
 
         const collector = getButtonCollector(interaction, interaction.channel);
+
+        if (!collector) {
+          return interaction.editReply(
+            'Failed to create message component collector!',
+          );
+        }
 
         collector.on('collect', async (i) => {
           if (i.customId === 'confirm') {
