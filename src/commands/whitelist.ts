@@ -66,14 +66,14 @@ export default new Command({
       return interaction.reply('This command can only be used in a guild.');
     }
 
-    const choice = args.getString('server');
-
-    if (!choice) {
-      return interaction.editReply('Please specify a server!');
-    }
-
     try {
       if (subcommand === 'list') {
+        const choice = args.getString('server');
+
+        if (!choice) {
+          return interaction.editReply('Please specify a server!');
+        }
+
         const { host, rconPort, rconPasswd } =
           config.mcConfig[choice as TServerChoice];
 
@@ -155,9 +155,7 @@ export default new Command({
       return handleInteractionError({
         interaction,
         err,
-        message: `There was an error trying to execute the whitlist ${subcommand} command for ${inlineCode(
-          choice,
-        )}`,
+        message: `There was an error trying to execute the whitlist ${subcommand} command!`,
       });
     }
   },
