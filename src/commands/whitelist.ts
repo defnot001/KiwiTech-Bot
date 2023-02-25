@@ -3,7 +3,7 @@ import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
-import { getServerChoices } from '../util/helpers';
+import { escapeMarkdown, getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { getWhitelist, runRconCommand } from '../util/rcon';
 
@@ -35,6 +35,7 @@ export default new Command({
           description: `The player's in-game name.`,
           type: ApplicationCommandOptionType.String,
           required: true,
+          autocomplete: true,
         },
       ],
     },
@@ -81,7 +82,7 @@ export default new Command({
 
         const whitelist = !response
           ? `There are no whitelisted players on ${choice}!`
-          : response.join('\n');
+          : response.map((ign) => escapeMarkdown(ign)).join('\n');
 
         const whitelistEmbed = new KoalaEmbedBuilder(interaction.user, {
           title: `${choice.toUpperCase()} Whitelist`,

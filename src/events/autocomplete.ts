@@ -7,6 +7,7 @@ import type { TServerChoice } from '../types/minecraft';
 import { handleEventError } from '../util/loggers';
 import { getAllTodos } from '../util/prisma';
 import { getModNames, ptero } from '../util/pterodactyl';
+import { getWhitelist } from '../util/rcon';
 
 export default new Event('interactionCreate', async (interaction) => {
   if (!interaction.isAutocomplete()) return;
@@ -54,6 +55,25 @@ export default new Event('interactionCreate', async (interaction) => {
       const todoListChoice = todoList.map((todo) => todo.title);
 
       return interaction.respond(mapChoices(todoListChoice));
+    }
+
+    if (interaction.commandName === 'whitelist') {
+      let totalWhitelist: string[] = [];
+
+      for (const server in config.mcConfig) {
+        if (server === 'snapshots') continue;
+
+        const { host, rconPort, rconPasswd } =
+          config.mcConfig[server as TServerChoice];
+
+        const whitelistNames = await getWhitelist(host, rconPort, rconPasswd);
+
+        totalWhitelist.push(...whitelistNames);
+      }
+
+      const whitelistNames = [...new Set(totalWhitelist)];
+
+      return interaction.respond(mapChoices(whitelistNames));
     }
 
     const serverChoice = interaction.options.getString('server') as

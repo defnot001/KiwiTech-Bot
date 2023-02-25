@@ -1,7 +1,6 @@
 import { queryFull, RCON } from 'minecraft-server-util';
 import { config } from '../config/config';
 import type { TMobcap } from '../types/minecraft';
-import { escapeMarkdown } from './helpers';
 
 export const getServerStatus = async (host: string, port: number) => {
   return await queryFull(host, port, { enableSRV: true });
@@ -113,8 +112,7 @@ export const getWhitelist = async (
 
   return splitResponse
     .split(', ')
-    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-    .map((ign) => escapeMarkdown(ign));
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
 
 export const queryScoreboard = async (scoreboardName: string) => {
