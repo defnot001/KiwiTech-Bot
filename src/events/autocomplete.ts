@@ -1,7 +1,7 @@
 import { Event } from 'djs-handlers';
 import { client } from '..';
 import dictionary119 from '../assets/dictionary_1.19';
-import { customScoreboards } from '../commands/scoreboard';
+import { customScoreboardObjectives } from '../commands/scoreboard';
 import { config } from '../config/config';
 import type { TServerChoice } from '../types/minecraft';
 import { handleEventError } from '../util/loggers';
@@ -38,7 +38,7 @@ export default new Event('interactionCreate', async (interaction) => {
       if (!action) return interaction.respond([]);
 
       if (action === 'custom') {
-        return interaction.respond(mapChoices(customScoreboards));
+        return interaction.respond(mapChoices(customScoreboardObjectives));
       } else {
         const targetObjectives = objectives
           .filter((obj) => obj.startsWith(action))

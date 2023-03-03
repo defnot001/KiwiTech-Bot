@@ -1,15 +1,22 @@
 import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import dictionary119 from '../assets/dictionary_1.19';
+import type { TScoreboards } from '../types/minecraft';
 import { scoreboardToImage } from '../util/canvas';
 import { handleInteractionError } from '../util/loggers';
-import { queryScoreboard } from '../util/rcon';
+import { getEventMap, getPlaytimeMap, queryScoreboard } from '../util/rcon';
 
-export const customScoreboards = ['digs', 'deaths', 'bedrock_removed'];
+export const customScoreboardObjectives = [
+  'digs',
+  'deaths',
+  'bedrock_removed',
+  'playtime',
+  'digevent',
+];
 
-const objectives = [
+const scoreboardObjectives = [
   ...Object.keys(dictionary119).map((key) => key),
-  ...customScoreboards,
+  ...customScoreboardObjectives,
 ];
 
 const choices = [
@@ -53,26 +60,32 @@ export default new Command({
       return interaction.editReply('Missing arguments for this command!');
     }
 
-    if (!interaction.guild) {
-      return interaction.reply('This command can only be used in a guild.');
-    }
-
     const scoreboardName = action !== 'custom' ? action + item : item;
 
-    if (!objectives.includes(scoreboardName)) {
+    if (!scoreboardObjectives.includes(scoreboardName)) {
       return interaction.editReply('This objective does not exist!');
     }
 
     try {
-      const scores = await queryScoreboard(scoreboardName);
+      let scoreboardMap: Map<string, number>;
 
-      if (!scores) {
+      if (item === 'digevent') {
+        scoreboardMap = await getEventMap();
+      } else if (item === 'playtime') {
+        scoreboardMap = await getPlaytimeMap();
+      } else {
+        scoreboardMap = await queryScoreboard(scoreboardName as TScoreboards);
+      }
+
+      if (scoreboardMap.size === 0) {
         return interaction.editReply(
           'There are no entries on that scoreboard yet.',
         );
       }
 
-      const leaderboard = scores.sort((a, b) => b[1] - a[1]).slice(0, 15);
+      const leaderboard = Array.from(scoreboardMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
 
       const choice = choices.find((x) => x.value === action);
 
@@ -83,6 +96,8 @@ export default new Command({
       const prettyfiedObjective =
         action !== 'custom'
           ? scoreboardName.replace(action, choice.name + ' ')
+          : item === 'playtime'
+          ? 'playtime (hours)'
           : item;
 
       const buffer = scoreboardToImage(prettyfiedObjective, leaderboard);

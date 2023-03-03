@@ -1,9 +1,20 @@
 import { queryFull, RCON } from 'minecraft-server-util';
 import { config } from '../config/config';
-import type { TMobcap } from '../types/minecraft';
+import type { TMobcap, TScoreboards, TServerChoice } from '../types/minecraft';
 
 export const getServerStatus = async (host: string, port: number) => {
   return await queryFull(host, port, { enableSRV: true });
+};
+
+export const isOfflineOrEmpty = async (server: TServerChoice) => {
+  const { host, port } = config.mcConfig[server];
+
+  try {
+    const status = await getServerStatus(host, port);
+    return status.players.online === 0 ? true : false;
+  } catch (err) {
+    return true;
+  }
 };
 
 export const runRconCommand = async (
@@ -115,21 +126,47 @@ export const getWhitelist = async (
     .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
 
-export const queryScoreboard = async (scoreboardName: string) => {
+export const queryScoreboard = async (scoreboardName: TScoreboards) => {
   const { host, rconPort, rconPasswd } = config.mcConfig.smp;
-  const query = `script run scores = []; for(system_info('server_whitelist'), put(scores, null, l('"' + _ + '"', scoreboard('${scoreboardName}', _)) )); print(scores)`;
+  const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
 
   const data = await runRconCommand(host, rconPort, rconPasswd, query);
-  const splitData = data.split(' =')[0];
+  const replaced = data.replace(/\(.+\)$/, '').replace(/^ =/, '');
 
-  if (!splitData) {
-    throw new Error('Failed to parse the data!');
+  return new Map<string, number>(Object.entries(JSON.parse(replaced)));
+};
+
+export const customScoreboards = [
+  'event_netherite_pick',
+  'event_diamond_pick',
+  'event_netherite_shovel',
+  'event_diamond_shovel',
+  'event_netherite_axe',
+  'event_diamond_axe',
+  'event_netherite_hoe',
+  'event_diamond_hoe',
+] as const;
+
+export const getEventMap = async () => {
+  let combinedMap: Map<string, number> = new Map();
+
+  for (const name of customScoreboards) {
+    const scoreMap = await queryScoreboard(name);
+
+    for (const [name, score] of scoreMap) {
+      combinedMap.set(name, (combinedMap.get(name) ?? 0) + score);
+    }
   }
 
-  const parsed = JSON.parse(splitData.replaceAll('null', '0')) as [
-    string,
-    number,
-  ][];
+  return combinedMap;
+};
 
-  return parsed.filter(([, score]) => score !== 0);
+export const getPlaytimeMap = async () => {
+  const playtimeMap = await queryScoreboard('playtime');
+
+  playtimeMap.forEach((ticks, name) =>
+    playtimeMap.set(name, Math.floor(ticks / 20 / 3600) ?? 0),
+  );
+
+  return playtimeMap;
 };
