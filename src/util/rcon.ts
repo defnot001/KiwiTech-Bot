@@ -170,3 +170,24 @@ export const getPlaytimeMap = async () => {
 
   return playtimeMap;
 };
+
+export const getPlayerScore = async (ign: string, scoreboard: TScoreboards) => {
+  const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
+
+  const res = await runRconCommand(
+    host,
+    rconPort,
+    rconPasswd,
+    `scoreboard players get ${ign} ${scoreboard}`,
+  );
+
+  if (res.startsWith(`${ign} has`)) {
+    try {
+      return parseInt(res.split(' ')[2] as string, 10);
+    } catch (err) {
+      return;
+    }
+  }
+
+  return;
+};

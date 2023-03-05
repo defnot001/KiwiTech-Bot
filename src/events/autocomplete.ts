@@ -35,16 +35,24 @@ export default new Event('interactionCreate', async (interaction) => {
       const objectives = Object.keys(dictionary119).map((key) => key);
       const action = interaction.options.getString('action');
 
-      if (!action) return interaction.respond([]);
+      if (focused.name === 'playername') {
+        const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
 
-      if (action === 'custom') {
-        return interaction.respond(mapChoices(customScoreboardObjectives));
-      } else {
-        const targetObjectives = objectives
-          .filter((obj) => obj.startsWith(action))
-          .map((item) => item.replace(action, ''));
+        const whitelistNames = await getWhitelist(host, rconPort, rconPasswd);
 
-        return interaction.respond(mapChoices(targetObjectives));
+        return interaction.respond(mapChoices(whitelistNames));
+      } else if (focused.name === 'item') {
+        if (action === 'custom') {
+          return interaction.respond(mapChoices(customScoreboardObjectives));
+        } else {
+          if (!action) return interaction.respond([]);
+
+          const targetObjectives = objectives
+            .filter((obj) => obj.startsWith(action))
+            .map((item) => item.replace(action, ''));
+
+          return interaction.respond(mapChoices(targetObjectives));
+        }
       }
     }
 
