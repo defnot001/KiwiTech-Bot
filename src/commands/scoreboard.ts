@@ -98,6 +98,15 @@ export default new Command({
       'action',
       true,
     ) as typeof choices[number]['value'];
+
+    const displayAction = choices.find((choice) => {
+      return action === choice.value;
+    })?.name;
+
+    if (!displayAction) {
+      return interaction.editReply('Cannot find action name to display!');
+    }
+
     const item = args.getString('item', true);
 
     const scoreboardName = (
@@ -153,7 +162,7 @@ export default new Command({
 
         const score = await getPlayerScore(ingameName, scoreboardName);
 
-        if (!score) {
+        if (score === undefined) {
           return interaction.editReply(
             `Cannot find score ${scoreboardName} for ${ingameName}!`,
           );
@@ -165,7 +174,7 @@ export default new Command({
         return interaction.editReply(
           `Player _${ingameName}_ has ${inlineCode(
             val.toString(),
-          )} for scoreboard: **${scoreboardName}**.`,
+          )} for scoreboard: **${displayAction} ${item}**.`,
         );
       }
     } catch (err) {
@@ -173,7 +182,7 @@ export default new Command({
         interaction,
         err,
         message: `There was an error trying to query scoreboard ${inlineCode(
-          scoreboardName,
+          displayAction,
         )}`,
       });
     }

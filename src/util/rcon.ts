@@ -129,11 +129,19 @@ export const getWhitelist = async (
 export const queryScoreboard = async (scoreboardName: TScoreboards) => {
   const { host, rconPort, rconPasswd } = config.mcConfig.smp;
   const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
-
   const data = await runRconCommand(host, rconPort, rconPasswd, query);
-  const replaced = data.replace(/\(.+\)$/, '').replace(/^ =/, '');
 
-  return new Map<string, number>(Object.entries(JSON.parse(replaced)));
+  const map = new Map<string, number>(
+    Object.entries(JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''))),
+  );
+
+  map.forEach((val, name) => {
+    if (val === null) {
+      map.set(name, 0);
+    }
+  });
+
+  return map;
 };
 
 export const customScoreboards = [
@@ -180,6 +188,10 @@ export const getPlayerScore = async (ign: string, scoreboard: TScoreboards) => {
     rconPasswd,
     `scoreboard players get ${ign} ${scoreboard}`,
   );
+
+  if (res === `Can't get value of ${scoreboard} for ${ign}; none is set`) {
+    return 0;
+  }
 
   if (res.startsWith(`${ign} has`)) {
     try {
