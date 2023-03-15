@@ -46,3 +46,10 @@ export type TScoreboards =
   | keyof typeof dictionary119
   | typeof customScoreboards[number]
   | TCustomScoreboards;
+
+export type TDimension = 'overworld' | 'nether' | 'end';
+
+export type TMinecraftRegion = {
+  x: number;
+  z: number;
+};
