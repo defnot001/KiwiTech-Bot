@@ -6,15 +6,10 @@ export const getServerStatus = async (host: string, port: number) => {
   return await queryFull(host, port, { enableSRV: true });
 };
 
-export const isOfflineOrEmpty = async (server: TServerChoice) => {
+export const getPlayerCount = async (server: TServerChoice) => {
   const { host, port } = config.mcConfig[server];
-
-  try {
-    const status = await getServerStatus(host, port);
-    return status.players.online === 0 ? true : false;
-  } catch (err) {
-    return true;
-  }
+  const data = await getServerStatus(host, port);
+  return data.players.online;
 };
 
 export const runRconCommand = async (
