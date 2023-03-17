@@ -2,6 +2,7 @@ import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
 import type { TDimension } from '../types/minecraft';
 import {
+  areRegionsIncluded,
   getServerState,
   mirrorRegionFiles,
   parseMinecraftRegions,
@@ -81,6 +82,18 @@ export default new Command({
           'You can only mirror 12 regions at a time!',
         );
       }
+
+      await interaction.editReply('Checking if regions exist...');
+
+      if (!(await areRegionsIncluded(fileNames, dimension, sourceServer))) {
+        return interaction.editReply(
+          'One or more regions do not exist on the source server!',
+        );
+      }
+
+      await interaction.editReply(
+        'User provided regions are valid! Checking if target server is offline...',
+      );
 
       const serverState = await getServerState(targetServer);
 

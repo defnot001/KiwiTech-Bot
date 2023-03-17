@@ -176,3 +176,26 @@ export async function startServerAndWait(serverChoice: TServerChoice) {
     }
   }
 }
+
+export async function areRegionsIncluded(
+  regionNames: string[],
+  dimension: TDimension,
+  server: TServerChoice,
+) {
+  const dimensionPath = {
+    overworld: '',
+    nether: 'DIM-1/',
+    end: 'DIM1/',
+  }[dimension];
+
+  const regionFiles = await ptero.files.list(
+    config.mcConfig[server].serverId,
+    `world/${dimensionPath}region`,
+  );
+
+  const regionFileNames = regionFiles.map((file) => file.name);
+
+  return regionNames.every((regionName) =>
+    regionFileNames.includes(regionName),
+  );
+}
