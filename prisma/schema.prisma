@@ -6,14 +6,23 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:kiwitechbot.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Todo {
-  id          Int       @id @default(autoincrement())
-  title       String
-  type        String
-  createdBy   String
-  createdAt   DateTime  @default(now())
+  id        Int      @id @default(autoincrement())
+  title     String
+  type      String
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  discordID          String   @id
+  discordUserTag     String
+  minecraftUsernames String[]
+  minecraftUUIDs     String[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
