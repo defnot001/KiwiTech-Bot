@@ -19,10 +19,8 @@ model Todo {
 }
 
 model Member {
-  discordID          String   @id
-  discordUserTag     String
-  minecraftUsernames String[]
-  minecraftUUIDs     String[]
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  discordID    String   @id
+  minecraftIDs String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
