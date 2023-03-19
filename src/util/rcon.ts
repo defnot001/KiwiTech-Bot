@@ -151,7 +151,7 @@ export const customScoreboards = [
 ] as const;
 
 export const getEventMap = async () => {
-  let combinedMap: Map<string, number> = new Map();
+  const combinedMap: Map<string, number> = new Map();
 
   for (const name of customScoreboards) {
     const scoreMap = await queryScoreboard(name);
