@@ -2,8 +2,6 @@ import type dictionary119 from '../assets/dictionary_1.19';
 import type { preconfig } from '../config/config';
 import type { customScoreboards } from '../util/rcon';
 
-export type TPowerAction = 'start' | 'stop' | 'restart' | 'kill';
-export type TPowerActionNoStart = Omit<TPowerAction, 'start'>;
 export type TServerChoice = keyof typeof preconfig.mcConfig;
 
 export type MCServerSubcommand =
