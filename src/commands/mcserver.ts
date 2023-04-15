@@ -1,11 +1,9 @@
 import { ApplicationCommandOptionType, bold } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
-import { config } from '../config/config';
-import type { TServerChoice } from '../types/minecraft';
-import { isTextChannel } from '../util/assertions';
+import { config, ServerChoice } from '../config';
 import { confirmCancelRow, getButtonCollector, mcServerChoice } from '../util/components';
-import formatTime, { capitalizeFirstLetter, formatBytes } from '../util/helpers';
+import { capitalizeFirstLetter, formatBytes } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { ptero } from '../util/pterodactyl';
 
@@ -47,7 +45,7 @@ export default new Command({
   execute: async ({ interaction, args }) => {
     await interaction.deferReply();
 
-    const serverChoice = args.getString('server', true) as TServerChoice;
+    const serverChoice = args.getString('server', true) as ServerChoice;
     const { serverId } = config.mcConfig[serverChoice];
 
     const subcommand = args.getSubcommand() as 'start' | 'stop' | 'restart' | 'kill' | 'stats';
@@ -55,11 +53,6 @@ export default new Command({
 
     if (!guild) {
       interaction.editReply('This command can only be used in a server.');
-      return;
-    }
-
-    if (!interaction.channel || !isTextChannel(interaction.channel)) {
-      interaction.editReply('This command can only be used in a text channel!');
       return;
     }
 
@@ -133,7 +126,7 @@ export default new Command({
         components: [confirmCancelRow],
       });
 
-      const collector = getButtonCollector(interaction, interaction.channel);
+      const collector = getButtonCollector(interaction);
 
       if (!collector) {
         interaction.editReply('Failed to create message component collector!');
@@ -205,4 +198,14 @@ async function performAction(action: 'stop' | 'restart' | 'kill', serverId: stri
 
 function translateAction(action: 'stop' | 'restart' | 'kill') {
   return action === 'stop' ? 'stopped' : `${action}ed`;
+}
+
+function formatTime(ms: number) {
+  const roundTowardsZero = ms > 0 ? Math.floor : Math.ceil;
+  const days = roundTowardsZero(ms / 86400000);
+  const hours = roundTowardsZero(ms / 3600000) % 24;
+  const minutes = roundTowardsZero(ms / 60000) % 60;
+  const seconds = roundTowardsZero(ms / 1000) % 60;
+
+  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }

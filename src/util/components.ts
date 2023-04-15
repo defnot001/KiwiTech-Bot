@@ -1,7 +1,14 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, ComponentType, GuildEmoji } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Client,
+  ComponentType,
+  GuildEmoji,
+  TextChannel,
+} from 'discord.js';
 import type { IExtendedInteraction } from 'djs-handlers';
 import { config, EmojiConfig } from '../config';
-import { isTextChannel } from './assertions';
 import { getServerChoices } from './helpers';
 
 type ConfigEmojis = {
@@ -36,7 +43,7 @@ export function getButtonCollector(interaction: IExtendedInteraction) {
   const { channel } = interaction;
   if (!channel) return;
 
-  if (isTextChannel(channel)) {
+  if (channel instanceof TextChannel) {
     return channel.createMessageComponentCollector<ComponentType.Button>({
       filter: (i) => i.user.id === interaction.user.id,
       max: 1,

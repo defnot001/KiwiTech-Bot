@@ -1,17 +1,16 @@
 import {
   ApplicationCommandOptionType,
   escapeMarkdown,
+  GuildMember,
   time,
   type Collection,
   type EmbedField,
-  type GuildMember,
   type Role,
   type Snowflake,
 } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config } from '../config';
-import { isGuildMember } from '../util/assertions';
 import { capitalizeFirstLetter } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 
@@ -138,7 +137,7 @@ export default new Command({
           fields: userFields,
         });
 
-        if (isGuildMember(targetMember)) {
+        if (targetMember instanceof GuildMember) {
           const memberFields: EmbedField[] = [];
 
           if (targetMember.joinedAt) {

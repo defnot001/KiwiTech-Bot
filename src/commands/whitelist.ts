@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config, ServerChoice } from '../config';
-import { escapeMarkdown, getServerChoices } from '../util/helpers';
+import { getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { getWhitelist, runRconCommand } from '../util/rcon';
 
@@ -143,3 +143,8 @@ export default new Command({
     }
   },
 });
+
+function escapeMarkdown(text: string): string {
+  const unescaped = text.replace(/\\(\*|_|`|~|\\)/g, '$1');
+  return unescaped.replace(/(\*|_|`|~|\\)/g, '\\$1');
+}

@@ -3,10 +3,10 @@ import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import path from 'path';
 import dictionary119 from '../assets/dictionary_1.19';
-import { projectPaths } from '../config';
-import type { TScoreboards } from '../types/minecraft';
+import { config, projectPaths } from '../config';
+import type { TScoreboards } from '../types/types';
 import { handleInteractionError } from '../util/loggers';
-import { getEventMap, getPlayerScore, getPlaytimeMap, queryScoreboard } from '../util/rcon';
+import { runRconCommand } from '../util/rcon';
 
 export const customScoreboardObjectives = [
   'digs',
@@ -250,4 +250,73 @@ function scoreboardToImage(scoreboardName: string, scoreboardData: [string, numb
   ctx.fillText('Total', playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
 
   return canvas.toBuffer('image/png');
+}
+
+async function queryScoreboard(scoreboardName: TScoreboards) {
+  const { host, rconPort, rconPasswd } = config.mcConfig.smp;
+  const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
+  const data = await runRconCommand(host, rconPort, rconPasswd, query);
+
+  const map = new Map<string, number>(Object.entries(JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''))));
+
+  map.forEach((val, name) => {
+    if (val === null) {
+      map.set(name, 0);
+    }
+  });
+
+  return map;
+}
+
+export const customScoreboards = [
+  'event_netherite_pick',
+  'event_diamond_pick',
+  'event_netherite_shovel',
+  'event_diamond_shovel',
+  'event_netherite_axe',
+  'event_diamond_axe',
+  'event_netherite_hoe',
+  'event_diamond_hoe',
+] as const;
+
+async function getEventMap() {
+  const combinedMap: Map<string, number> = new Map();
+
+  for (const name of customScoreboards) {
+    const scoreMap = await queryScoreboard(name);
+
+    for (const [name, score] of scoreMap) {
+      combinedMap.set(name, (combinedMap.get(name) ?? 0) + score);
+    }
+  }
+
+  return combinedMap;
+}
+
+async function getPlaytimeMap() {
+  const playtimeMap = await queryScoreboard('playtime');
+
+  playtimeMap.forEach((ticks, name) => playtimeMap.set(name, Math.floor(ticks / 20 / 3600) ?? 0));
+
+  return playtimeMap;
+}
+
+async function getPlayerScore(ign: string, scoreboard: TScoreboards) {
+  const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
+
+  const res = await runRconCommand(host, rconPort, rconPasswd, `scoreboard players get ${ign} ${scoreboard}`);
+
+  if (res === `Can't get value of ${scoreboard} for ${ign}; none is set`) {
+    return 0;
+  }
+
+  if (res.startsWith(`${ign} has`)) {
+    try {
+      return parseInt(res.split(' ')[2] as string, 10);
+    } catch (err) {
+      return;
+    }
+  }
+
+  return;
 }

@@ -30,8 +30,6 @@ export async function getMultipleUUIDs(usernames: string[]) {
     };
   });
 
-  console.log(mapped);
-
   return mapped;
 }
 

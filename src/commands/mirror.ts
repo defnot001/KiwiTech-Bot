@@ -1,14 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
-import {
-  areRegionsIncluded,
-  getServerState,
-  mirrorRegionFiles,
-  parseMinecraftRegions,
-  startServerAndWait,
-  stopServerAndWait,
-} from '../util/pterodactyl';
-import { getPlayerCount } from '../util/rcon';
+import { config } from '../config';
+import type { ServerChoice } from '../config';
+import { getServerState, ptero } from '../util/pterodactyl';
+import { queryFull } from 'minecraft-server-util';
+import axios from 'axios';
 
 export default new Command({
   name: 'mirror',
@@ -122,3 +119,123 @@ export default new Command({
     }
   },
 });
+
+type Dimension = 'overworld' | 'nether' | 'end';
+
+async function getPlayerCount(server: ServerChoice) {
+  const { host, port } = config.mcConfig[server];
+  const data = await queryFull(host, port);
+  return data.players.online;
+}
+
+async function mirrorRegionFiles(
+  server: ServerChoice,
+  targetServer: ServerChoice,
+  dimension: Dimension,
+  regionName: string,
+) {
+  const dimensionPath = {
+    overworld: '',
+    nether: 'DIM-1/',
+    end: 'DIM1/',
+  }[dimension];
+
+  const fileTypes = ['region', 'entities', 'poi'] as const;
+  const filePaths = fileTypes.map((type) => `world/${dimensionPath}${type}/${regionName}`);
+
+  const linkPromises = filePaths.map((path) => ptero.files.getDownloadLink(config.mcConfig[server].serverId, path));
+
+  const links = await Promise.all(linkPromises);
+  links.forEach((link) => {
+    if (!link) {
+      throw new Error(`Couldn't get the download links for ${dimension} region: ${regionName}`);
+    }
+  });
+
+  const fileFetchAndWritePromises = links.map(async (link, index) => {
+    const file = await axios.get<Buffer>(link, { responseType: 'arraybuffer' });
+
+    const path = filePaths[index];
+
+    if (!path) {
+      throw new Error(`Couldn't get the path for ${dimension} region: ${regionName}`);
+    }
+
+    await ptero.files.write(config.mcConfig[targetServer].serverId, path, file.data);
+  });
+
+  await Promise.all(fileFetchAndWritePromises);
+}
+
+function parseMinecraftRegions(input: string) {
+  const regions = input.split(',').map((s) => s.trim());
+  const parsedRegions: { x: number; z: number }[] = [];
+
+  for (const region of regions) {
+    const parts = region.split('.');
+
+    if (parts.length !== 2) {
+      return null;
+    }
+
+    const [xStr, zStr] = parts;
+    const x = parseInt(xStr!, 10);
+    const z = parseInt(zStr!, 10);
+
+    if (isNaN(x) || isNaN(z)) {
+      return null;
+    }
+
+    parsedRegions.push({ x, z });
+  }
+
+  return parsedRegions.map((region) => `r.${region.x}.${region.z}.mca`);
+}
+
+async function areRegionsIncluded(regionNames: string[], dimension: Dimension, server: ServerChoice) {
+  const dimensionPath = {
+    overworld: '',
+    nether: 'DIM-1/',
+    end: 'DIM1/',
+  }[dimension];
+
+  const regionFiles = await ptero.files.list(config.mcConfig[server].serverId, `world/${dimensionPath}region`);
+
+  const regionFileNames = regionFiles.map((file) => file.name);
+
+  return regionNames.every((regionName) => regionFileNames.includes(regionName));
+}
+
+async function startServerAndWait(serverChoice: ServerChoice) {
+  await ptero.servers.start(config.mcConfig[serverChoice].serverId);
+
+  let serverState = await getServerState(serverChoice);
+  let counter = 0;
+
+  while (serverState !== 'running') {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    serverState = await getServerState(serverChoice);
+    counter++;
+
+    if (counter > 15) {
+      throw new Error('Server failed to start.');
+    }
+  }
+}
+
+async function stopServerAndWait(serverChoice: ServerChoice) {
+  await ptero.servers.stop(config.mcConfig[serverChoice].serverId);
+
+  let serverState = await getServerState(serverChoice);
+  let counter = 0;
+
+  while (serverState !== 'offline') {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    serverState = await getServerState(serverChoice);
+    counter++;
+
+    if (counter > 15) {
+      throw new Error('Server failed to stop.');
+    }
+  }
+}

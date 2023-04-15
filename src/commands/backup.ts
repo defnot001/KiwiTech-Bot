@@ -1,8 +1,7 @@
-import { ApplicationCommandOptionType, bold, inlineCode, time } from 'discord.js';
+import { ApplicationCommandOptionType, bold, inlineCode, TextChannel, time } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config, ServerChoice } from '../config';
-import { isTextChannel } from '../util/assertions';
 import { confirmCancelRow, getButtonCollector, mcServerChoice } from '../util/components';
 import { formatBytes } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
@@ -81,7 +80,7 @@ export default new Command({
       return;
     }
 
-    if (!channel || !isTextChannel(channel)) {
+    if (!channel || !(channel instanceof TextChannel)) {
       interaction.editReply('This command can only be used in a text channel.');
       return;
     }

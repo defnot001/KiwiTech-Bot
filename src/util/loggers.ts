@@ -1,8 +1,7 @@
-import type { Client, Guild, TextChannel } from 'discord.js';
+import { Client, Guild, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import type { IExtendedInteraction } from 'djs-handlers';
 import { ChannelConfig, config } from '../config';
-import { isTextChannel } from './assertions';
 import getErrorMessage from './errors';
 
 type InteractionErrorOptions = {
@@ -87,7 +86,7 @@ export async function handleEventError(options: EventErrorOptions) {
 export async function getTextChannelFromID(guild: Guild, channel: keyof ChannelConfig): Promise<TextChannel> {
   const fetchedChannel = await guild.channels.fetch(config.channels[channel]);
 
-  if (!fetchedChannel || !isTextChannel(fetchedChannel)) {
+  if (!fetchedChannel || !(fetchedChannel instanceof TextChannel)) {
     throw new Error('Failed to fetch text channel!');
   }
 
