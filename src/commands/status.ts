@@ -1,8 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
-import { config } from '../config/config';
-import type { TServerChoice } from '../types/minecraft';
+import { config, ServerChoice } from '../config';
 import { getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { getServerStatus, queryMobcap, queryMspt } from '../util/rcon';
@@ -22,7 +21,7 @@ export default new Command({
   execute: async ({ interaction, args }) => {
     await interaction.deferReply();
 
-    const choice = args.getString('server');
+    const choice = args.getString('server', true) as ServerChoice;
 
     if (!choice) {
       return interaction.editReply('Please specify a server!');
@@ -32,8 +31,7 @@ export default new Command({
       return interaction.reply('This command can only be used in a guild.');
     }
 
-    const { host, port, rconPort, rconPasswd } =
-      config.mcConfig[choice as TServerChoice];
+    const { host, port, rconPort, rconPasswd } = config.mcConfig[choice];
 
     try {
       const status = await getServerStatus(host, port);
@@ -41,13 +39,10 @@ export default new Command({
       const mobcap = await queryMobcap(host, rconPort, rconPasswd);
 
       if (!status || !performance || !mobcap) {
-        return interaction.editReply(
-          'Something went wrong trying to get information about that server!',
-        );
+        return interaction.editReply('Something went wrong trying to get information about that server!');
       }
 
-      const playerlist =
-        status.players.list.join('\n') || 'There is currently nobody online.';
+      const playerlist = status.players.list.join('\n') || 'There is currently nobody online.';
 
       const statusEmbed = new KoalaEmbedBuilder(interaction.user, {
         title: `${interaction.guild.name} ${choice.toUpperCase()}`,

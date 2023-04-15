@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import type { User } from 'discord.js';
+import type { GuildMemberManager, Snowflake, User } from 'discord.js';
 
 const prisma = new PrismaClient();
 
@@ -22,12 +22,7 @@ export async function getTodoByType(type: 'survival' | 'creative') {
   });
 }
 
-export async function addTodo({
-  title,
-  type,
-  createdBy,
-  createdAt,
-}: TodoOptions) {
+export async function addTodo({ title, type, createdBy, createdAt }: TodoOptions) {
   await prisma.todo.create({
     data: {
       title,
@@ -55,4 +50,32 @@ export async function completeTodo(title: string) {
       title,
     },
   });
+}
+
+export async function addMember(user: User, minecraftIDs: string[]) {
+  await prisma.member.create({
+    data: {
+      discordID: user.id,
+      minecraftIDs: minecraftIDs,
+    },
+  });
+}
+
+async function getMembersFromID(members: Snowflake[], manager: GuildMemberManager) {
+  return await manager.fetch({
+    user: members,
+  });
+}
+
+export async function getMemberNames(manager: GuildMemberManager) {
+  const members = await prisma.member.findMany();
+
+  const memberCollection = await getMembersFromID(
+    members.map((member) => member.discordID),
+    manager,
+  );
+
+  return memberCollection
+    .sort((a, b) => a.user.username.localeCompare(b.user.username))
+    .map((member) => member.user.username);
 }

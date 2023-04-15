@@ -1,18 +1,8 @@
-import {
-  EmbedBuilder,
-  type APIEmbed,
-  type EmbedData,
-  type GuildMember,
-  type PartialGuildMember,
-} from 'discord.js';
-import { config } from '../config/config';
+import { EmbedBuilder, type APIEmbed, type EmbedData, type GuildMember, type PartialGuildMember } from 'discord.js';
+import { config } from '../config';
 
 export class JoinLeaveEmbedBuilder extends EmbedBuilder {
-  constructor(
-    member: GuildMember | PartialGuildMember,
-    action: 'joined' | 'left',
-    data?: EmbedData | APIEmbed,
-  ) {
+  constructor(member: GuildMember | PartialGuildMember, action: 'joined' | 'left', data?: EmbedData | APIEmbed) {
     super(data);
 
     this.setAuthor({

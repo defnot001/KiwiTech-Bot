@@ -2,10 +2,9 @@ import { Event } from 'djs-handlers';
 import { client } from '..';
 import dictionary119 from '../assets/dictionary_1.19';
 import { customScoreboardObjectives } from '../commands/scoreboard';
-import { config } from '../config/config';
-import type { TServerChoice } from '../types/minecraft';
+import { config, ServerChoice } from '../config';
 import { handleEventError } from '../util/loggers';
-import { getAllTodos } from '../util/prisma';
+import { getAllTodos, getMemberNames } from '../util/prisma';
 import { getModNames, ptero } from '../util/pterodactyl';
 import { getWhitelist } from '../util/rcon';
 
@@ -16,12 +15,15 @@ export default new Event('interactionCreate', async (interaction) => {
   const command = client.commands.get(interaction.commandName);
 
   if (!command) {
-    return console.error(
-      `No command matching ${interaction.commandName} was found.`,
-    );
+    return console.error(`No command matching ${interaction.commandName} was found.`);
   }
 
+  const guild = interaction.guild;
+
+  if (!guild) return;
+
   const focused = interaction.options.getFocused(true);
+  const subcommand = interaction.options.getSubcommand();
 
   const mapChoices = (choices: string[]) => {
     return choices
@@ -54,25 +56,18 @@ export default new Event('interactionCreate', async (interaction) => {
           return interaction.respond(mapChoices(targetObjectives));
         }
       }
-    }
-
-    const subcommand = interaction.options.getSubcommand();
-
-    if (interaction.commandName === 'todo' && subcommand !== 'add') {
+    } else if (interaction.commandName === 'todo' && subcommand !== 'add') {
       const todoList = await getAllTodos();
       const todoListChoice = todoList.map((todo) => todo.title);
 
       return interaction.respond(mapChoices(todoListChoice));
-    }
-
-    if (interaction.commandName === 'whitelist') {
-      let totalWhitelist: string[] = [];
+    } else if (interaction.commandName === 'whitelist') {
+      const totalWhitelist: string[] = [];
 
       for (const server in config.mcConfig) {
         if (server === 'snapshots') continue;
 
-        const { host, rconPort, rconPasswd } =
-          config.mcConfig[server as TServerChoice];
+        const { host, rconPort, rconPasswd } = config.mcConfig[server as ServerChoice];
 
         const whitelistNames = await getWhitelist(host, rconPort, rconPasswd);
 
@@ -84,32 +79,26 @@ export default new Event('interactionCreate', async (interaction) => {
       );
 
       return interaction.respond(mapChoices(whitelistNames));
-    }
+    } else if (interaction.commandName === 'mods') {
+      const serverChoice = interaction.options.getString('server') as ServerChoice | undefined;
 
-    const serverChoice = interaction.options.getString('server') as
-      | TServerChoice
-      | undefined;
+      if (!serverChoice) return interaction.respond([]);
 
-    if (!serverChoice) return interaction.respond([]);
-
-    if (interaction.commandName === 'mods') {
       const modNames = await getModNames(serverChoice);
-      const modNamesChoice =
-        subcommand === 'enable' ? modNames.disabled : modNames.enabled;
+      const modNamesChoice = subcommand === 'enable' ? modNames.disabled : modNames.enabled;
 
       return interaction.respond(mapChoices(modNamesChoice));
-    }
+    } else if (interaction.commandName === 'backup') {
+      const serverChoice = interaction.options.getString('server') as ServerChoice | undefined;
 
-    if (interaction.commandName === 'backup') {
-      const backupListResponse = await ptero.backups.list(
-        config.mcConfig[serverChoice].serverId,
-      );
+      if (!serverChoice) return interaction.respond([]);
+      const backupListResponse = await ptero.backups.list(config.mcConfig[serverChoice].serverId);
 
-      const backupNames = backupListResponse.data
-        .reverse()
-        .map((backup) => backup.name);
+      const backupNames = backupListResponse.data.reverse().map((backup) => backup.name);
 
       return interaction.respond(mapChoices(backupNames));
+    } else if (interaction.commandName === 'member') {
+      return interaction.respond(mapChoices(await getMemberNames(guild.members)));
     }
   } catch (err) {
     return handleEventError({

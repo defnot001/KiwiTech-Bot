@@ -1,11 +1,6 @@
-import {
-  ApplicationCommandOptionType,
-  codeBlock,
-  inlineCode,
-} from 'discord.js';
+import { ApplicationCommandOptionType, codeBlock, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
-import { config } from '../config/config';
-import type { TServerChoice } from '../types/minecraft';
+import { config, ServerChoice } from '../config';
 import { getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { runRconCommand } from '../util/rcon';
@@ -31,7 +26,7 @@ export default new Command({
   execute: async ({ interaction, args }) => {
     await interaction.deferReply();
 
-    const choice = args.getString('server');
+    const choice = args.getString('server', true) as ServerChoice;
     const command = args.getString('command');
 
     if (!choice || !command) {
@@ -42,8 +37,7 @@ export default new Command({
       return interaction.editReply('This command can only be used in a guild.');
     }
 
-    const { host, rconPort, rconPasswd } =
-      config.mcConfig[choice as TServerChoice];
+    const { host, rconPort, rconPasswd } = config.mcConfig[choice];
 
     try {
       const response =
@@ -63,9 +57,7 @@ export default new Command({
       return handleInteractionError({
         interaction,
         err,
-        message: `Error while running command ${inlineCode(
-          command,
-        )} on server ${choice}!`,
+        message: `Error while running command ${inlineCode(command)} on server ${choice}!`,
       });
     }
   },

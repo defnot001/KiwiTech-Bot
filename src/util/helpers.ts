@@ -1,10 +1,5 @@
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMember,
-  PartialGuildMember,
-  time,
-} from 'discord.js';
-import { config } from '../config/config';
+import { ApplicationCommandOptionChoiceData, GuildMember, PartialGuildMember, time } from 'discord.js';
+import { config } from '../config';
 
 export function getServerChoices(): ApplicationCommandOptionChoiceData<string>[] {
   const choices = [];
@@ -49,13 +44,6 @@ export function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export function getJoinedAtComponent(
-  member: GuildMember | PartialGuildMember,
-): string {
-  return member.joinedAt
-    ? `\nJoined at: ${time(member.joinedAt, 'f')} (${time(
-        member.joinedAt,
-        'R',
-      )})`
-    : '\u200b';
+export function getJoinedAtComponent(member: GuildMember | PartialGuildMember): string {
+  return member.joinedAt ? `\nJoined at: ${time(member.joinedAt, 'f')} (${time(member.joinedAt, 'R')})` : '\u200b';
 }

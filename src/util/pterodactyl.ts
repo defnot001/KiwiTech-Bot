@@ -1,18 +1,17 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import axios from 'axios';
 import { PteroClient } from 'ptero-client';
-import { config } from '../config/config';
-import type {
-  TDimension,
-  TMinecraftRegion,
-  TServerChoice,
-} from '../types/minecraft';
+import { config, ServerChoice } from '../config';
+import type { TMinecraftRegion } from '../types/minecraft';
+
+type Dimension = 'overworld' | 'nether' | 'end';
 
 export const ptero = new PteroClient({
   baseURL: config.ptero.url,
   apiKey: config.ptero.apiKey,
 });
 
-export async function getModFiles(serverChoice: TServerChoice) {
+export async function getModFiles(serverChoice: ServerChoice) {
   const modFiles = await (
     await ptero.files.list(config.mcConfig[serverChoice].serverId, '/mods')
   ).filter((mod) => {
@@ -22,7 +21,7 @@ export async function getModFiles(serverChoice: TServerChoice) {
   return modFiles;
 }
 
-async function getMods(serverChoice: TServerChoice) {
+async function getMods(serverChoice: ServerChoice) {
   const modFiles = await getModFiles(serverChoice);
 
   return {
@@ -35,7 +34,7 @@ async function getMods(serverChoice: TServerChoice) {
   };
 }
 
-export async function getModNames(serverChoice: TServerChoice) {
+export async function getModNames(serverChoice: ServerChoice) {
   const mods = await getMods(serverChoice);
 
   return {
@@ -44,33 +43,16 @@ export async function getModNames(serverChoice: TServerChoice) {
   };
 }
 
-export async function getBackups(serverChoice: TServerChoice) {
-  const backups = await ptero.backups.list(
-    config.mcConfig[serverChoice].serverId,
-  );
-
-  const backupMap = new Map(
-    backups.data.reverse().map((backup) => [backup.name, backup]),
-  );
-
-  return {
-    backups: backupMap,
-    meta: backups.meta,
-  };
-}
-
-export async function getServerState(serverChoice: TServerChoice) {
-  const serverStats = await ptero.servers.getResourceUsage(
-    config.mcConfig[serverChoice].serverId,
-  );
+export async function getServerState(serverChoice: ServerChoice) {
+  const serverStats = await ptero.servers.getResourceUsage(config.mcConfig[serverChoice].serverId);
 
   return serverStats.current_state;
 }
 
 export async function mirrorRegionFiles(
-  server: TServerChoice,
-  targetServer: TServerChoice,
-  dimension: TDimension,
+  server: ServerChoice,
+  targetServer: ServerChoice,
+  dimension: Dimension,
   regionName: string,
 ) {
   const dimensionPath = {
@@ -80,20 +62,14 @@ export async function mirrorRegionFiles(
   }[dimension];
 
   const fileTypes = ['region', 'entities', 'poi'] as const;
-  const filePaths = fileTypes.map(
-    (type) => `world/${dimensionPath}${type}/${regionName}`,
-  );
+  const filePaths = fileTypes.map((type) => `world/${dimensionPath}${type}/${regionName}`);
 
-  const linkPromises = filePaths.map((path) =>
-    ptero.files.getDownloadLink(config.mcConfig[server].serverId, path),
-  );
+  const linkPromises = filePaths.map((path) => ptero.files.getDownloadLink(config.mcConfig[server].serverId, path));
 
   const links = await Promise.all(linkPromises);
   links.forEach((link) => {
     if (!link) {
-      throw new Error(
-        `Couldn't get the download links for ${dimension} region: ${regionName}`,
-      );
+      throw new Error(`Couldn't get the download links for ${dimension} region: ${regionName}`);
     }
   });
 
@@ -103,16 +79,10 @@ export async function mirrorRegionFiles(
     const path = filePaths[index];
 
     if (!path) {
-      throw new Error(
-        `Couldn't get the path for ${dimension} region: ${regionName}`,
-      );
+      throw new Error(`Couldn't get the path for ${dimension} region: ${regionName}`);
     }
 
-    await ptero.files.write(
-      config.mcConfig[targetServer].serverId,
-      path,
-      file.data,
-    );
+    await ptero.files.write(config.mcConfig[targetServer].serverId, path, file.data);
   });
 
   await Promise.all(fileFetchAndWritePromises);
@@ -143,7 +113,7 @@ export function parseMinecraftRegions(input: string) {
   return parsedRegions.map((region) => `r.${region.x}.${region.z}.mca`);
 }
 
-export async function stopServerAndWait(serverChoice: TServerChoice) {
+export async function stopServerAndWait(serverChoice: ServerChoice) {
   await ptero.servers.stop(config.mcConfig[serverChoice].serverId);
 
   let serverState = await getServerState(serverChoice);
@@ -160,7 +130,7 @@ export async function stopServerAndWait(serverChoice: TServerChoice) {
   }
 }
 
-export async function startServerAndWait(serverChoice: TServerChoice) {
+export async function startServerAndWait(serverChoice: ServerChoice) {
   await ptero.servers.start(config.mcConfig[serverChoice].serverId);
 
   let serverState = await getServerState(serverChoice);
@@ -177,25 +147,16 @@ export async function startServerAndWait(serverChoice: TServerChoice) {
   }
 }
 
-export async function areRegionsIncluded(
-  regionNames: string[],
-  dimension: TDimension,
-  server: TServerChoice,
-) {
+export async function areRegionsIncluded(regionNames: string[], dimension: Dimension, server: ServerChoice) {
   const dimensionPath = {
     overworld: '',
     nether: 'DIM-1/',
     end: 'DIM1/',
   }[dimension];
 
-  const regionFiles = await ptero.files.list(
-    config.mcConfig[server].serverId,
-    `world/${dimensionPath}region`,
-  );
+  const regionFiles = await ptero.files.list(config.mcConfig[server].serverId, `world/${dimensionPath}region`);
 
   const regionFileNames = regionFiles.map((file) => file.name);
 
-  return regionNames.every((regionName) =>
-    regionFileNames.includes(regionName),
-  );
+  return regionNames.every((regionName) => regionFileNames.includes(regionName));
 }

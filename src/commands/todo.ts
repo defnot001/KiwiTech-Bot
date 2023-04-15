@@ -1,19 +1,9 @@
 import type { Todo } from '@prisma/client';
-import {
-  ApplicationCommandOptionType,
-  EmbedBuilder,
-  inlineCode,
-  WebhookClient,
-} from 'discord.js';
+import { ApplicationCommandOptionType, EmbedBuilder, inlineCode, WebhookClient } from 'discord.js';
 import { Command } from 'djs-handlers';
-import { config } from '../config/config';
+import { config } from '../config';
 import { getTextChannelFromID, handleInteractionError } from '../util/loggers';
-import {
-  addTodo,
-  completeTodo,
-  getTodoByType,
-  updateTodo,
-} from '../util/prisma';
+import { addTodo, completeTodo, getTodoByType, updateTodo } from '../util/prisma';
 
 export default new Command({
   name: 'todo',
@@ -26,8 +16,7 @@ export default new Command({
       options: [
         {
           name: 'type',
-          description:
-            'Choose wether the todo is related to survival or creative gameplay.',
+          description: 'Choose wether the todo is related to survival or creative gameplay.',
           type: ApplicationCommandOptionType.String,
           required: true,
           choices: [
@@ -82,9 +71,7 @@ export default new Command({
     await interaction.deferReply({ ephemeral: true });
 
     if (!interaction.guild) {
-      return interaction.editReply(
-        'This command can only be used in a server.',
-      );
+      return interaction.editReply('This command can only be used in a server.');
     }
 
     const subcommand = args.getSubcommand() as 'add' | 'update' | 'complete';
@@ -103,10 +90,7 @@ export default new Command({
     }
 
     try {
-      const todoLogChannel = await getTextChannelFromID(
-        interaction.guild,
-        'todoLog',
-      );
+      const todoLogChannel = await getTextChannelFromID(interaction.guild, 'todoLog');
 
       const todoLogEmbed = new EmbedBuilder({
         title: `${interaction.guild.name} Todo Log`,
@@ -127,9 +111,7 @@ export default new Command({
 
         interaction.editReply('Successfully added todo item to the database.');
 
-        todoLogEmbed.setDescription(
-          `Created a new todo item for the ${type} list: ${inlineCode(title)}`,
-        );
+        todoLogEmbed.setDescription(`Created a new todo item for the ${type} list: ${inlineCode(title)}`);
       } else if (subcommand === 'update') {
         const newTitle = args.getString('newtitle');
 
@@ -139,23 +121,15 @@ export default new Command({
 
         await updateTodo(title, newTitle);
 
-        interaction.editReply(
-          'Successfully updated todo item in the database.',
-        );
+        interaction.editReply('Successfully updated todo item in the database.');
 
-        todoLogEmbed.setDescription(
-          `Updated a todo item: "${inlineCode(title)}" to "${inlineCode(
-            newTitle,
-          )}".`,
-        );
+        todoLogEmbed.setDescription(`Updated a todo item: "${inlineCode(title)}" to "${inlineCode(newTitle)}".`);
       } else {
         await completeTodo(title);
 
         interaction.editReply('Successfully completed todo item.');
 
-        todoLogEmbed.setDescription(
-          `Completed a todo item: ${inlineCode(title)}.`,
-        );
+        todoLogEmbed.setDescription(`Completed a todo item: ${inlineCode(title)}.`);
       }
 
       const todoChannel = await getTextChannelFromID(interaction.guild, 'todo');

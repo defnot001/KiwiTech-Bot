@@ -1,6 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Command } from 'djs-handlers';
-import type { TDimension } from '../types/minecraft';
 import {
   areRegionsIncluded,
   getServerState,
@@ -17,8 +16,7 @@ export default new Command({
   options: [
     {
       name: 'server',
-      description:
-        'Choose wether you want to mirror SMP to Copy or CMP to CMP2.',
+      description: 'Choose wether you want to mirror SMP to Copy or CMP to CMP2.',
       type: ApplicationCommandOptionType.String,
       choices: [
         {
@@ -54,8 +52,7 @@ export default new Command({
     },
     {
       name: 'regions',
-      description:
-        'The regions to mirror. Separate multiple regions with a comma. Example: -1.0, 1.-1',
+      description: 'The regions to mirror. Separate multiple regions with a comma. Example: -1.0, 1.-1',
       type: ApplicationCommandOptionType.String,
       required: true,
     },
@@ -64,7 +61,7 @@ export default new Command({
     await interaction.deferReply();
 
     const server = args.getString('server', true) as 'survival' | 'creative';
-    const dimension = args.getString('dimension', true) as TDimension;
+    const dimension = args.getString('dimension', true) as 'overworld' | 'nether' | 'end';
     const regionsArg = args.getString('regions', true);
 
     const sourceServer = server === 'survival' ? 'smp' : 'cmp';
@@ -78,22 +75,16 @@ export default new Command({
       }
 
       if (fileNames.length > 12) {
-        return interaction.editReply(
-          'You can only mirror 12 regions at a time!',
-        );
+        return interaction.editReply('You can only mirror 12 regions at a time!');
       }
 
       await interaction.editReply('Checking if regions exist...');
 
       if (!(await areRegionsIncluded(fileNames, dimension, sourceServer))) {
-        return interaction.editReply(
-          'One or more regions do not exist on the source server!',
-        );
+        return interaction.editReply('One or more regions do not exist on the source server!');
       }
 
-      await interaction.editReply(
-        'User provided regions are valid! Checking if target server is offline...',
-      );
+      await interaction.editReply('User provided regions are valid! Checking if target server is offline...');
 
       const serverState = await getServerState(targetServer);
 
@@ -119,21 +110,15 @@ export default new Command({
 
       await Promise.all(mirrorPromises);
 
-      await interaction.editReply(
-        'All files copied! Starting target server...',
-      );
+      await interaction.editReply('All files copied! Starting target server...');
 
       await startServerAndWait(targetServer);
 
       return interaction.editReply(
-        `Successfully mirrored ${
-          fileNames.length
-        } region files and started ${targetServer.toUpperCase()}!`,
+        `Successfully mirrored ${fileNames.length} region files and started ${targetServer.toUpperCase()}!`,
       );
     } catch (err) {
-      return interaction.editReply(
-        `An error occured while mirroring regions from ${sourceServer} to ${targetServer}!`,
-      );
+      return interaction.editReply(`An error occured while mirroring regions from ${sourceServer} to ${targetServer}!`);
     }
   },
 });

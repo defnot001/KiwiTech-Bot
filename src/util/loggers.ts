@@ -1,17 +1,24 @@
-import type { Guild, TextChannel } from 'discord.js';
+import type { Client, Guild, TextChannel } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
-import { config } from '../config/config';
-import type { TChannelName } from '../types/discord';
-import type {
-  IEventErrorOptions,
-  IInteractionErrorOptions,
-} from '../types/errors';
+import type { IExtendedInteraction } from 'djs-handlers';
+import { ChannelConfig, config } from '../config';
 import { isTextChannel } from './assertions';
 import getErrorMessage from './errors';
 
-export async function handleInteractionError(
-  options: IInteractionErrorOptions,
-) {
+type InteractionErrorOptions = {
+  interaction: IExtendedInteraction;
+  err: unknown;
+  message: string;
+};
+
+type EventErrorOptions = {
+  client: Client;
+  guild: Guild;
+  err: unknown;
+  message: string;
+};
+
+export async function handleInteractionError(options: InteractionErrorOptions) {
   const { interaction, err, message } = options;
 
   const errorMessage = getErrorMessage(err);
@@ -51,7 +58,7 @@ export async function handleInteractionError(
   botLog.send({ embeds: [interactionErrorEmbed] });
 }
 
-export async function handleEventError(options: IEventErrorOptions) {
+export async function handleEventError(options: EventErrorOptions) {
   const { client, guild, err, message } = options;
   const botLogChannel = await getTextChannelFromID(guild, 'botLog');
 
@@ -77,10 +84,7 @@ export async function handleEventError(options: IEventErrorOptions) {
   botLogChannel.send({ embeds: [eventErrorEmbed] });
 }
 
-export async function getTextChannelFromID(
-  guild: Guild,
-  channel: TChannelName,
-): Promise<TextChannel> {
+export async function getTextChannelFromID(guild: Guild, channel: keyof ChannelConfig): Promise<TextChannel> {
   const fetchedChannel = await guild.channels.fetch(config.channels[channel]);
 
   if (!fetchedChannel || !isTextChannel(fetchedChannel)) {

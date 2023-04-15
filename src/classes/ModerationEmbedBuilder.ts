@@ -1,17 +1,28 @@
-import { EmbedBuilder, inlineCode } from 'discord.js';
-import { config } from '../config/config';
-import type {
-  IModerationDescription,
-  IModerationEmbedOptions,
-} from '../types/discord';
+import { EmbedBuilder, GuildMember, inlineCode, User } from 'discord.js';
+import { config } from '../config';
+
+interface ModerationDescription {
+  member: string;
+  action: string;
+  reason?: string;
+  expiration?: string;
+}
+
+interface ModerationEmbedOptions {
+  target: User;
+  executor: GuildMember;
+  action: 'kick' | 'ban' | 'unban';
+  reason?: string | null;
+  expiration?: number | null;
+}
 
 export class ModerationEmbedBuilder extends EmbedBuilder {
-  constructor(options: IModerationEmbedOptions) {
+  constructor(options: ModerationEmbedOptions) {
     super();
 
     const { target, executor, action, reason, expiration } = options;
 
-    const descriptionObject: IModerationDescription = {
+    const descriptionObject: ModerationDescription = {
       member: `**Member**: ${target.tag} (${inlineCode(target.id)})`,
       action: `**Action**: ${action}`,
     };

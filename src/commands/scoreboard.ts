@@ -3,15 +3,10 @@ import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import path from 'path';
 import dictionary119 from '../assets/dictionary_1.19';
-import { projectPaths } from '../config/config';
+import { projectPaths } from '../config';
 import type { TScoreboards } from '../types/minecraft';
 import { handleInteractionError } from '../util/loggers';
-import {
-  getEventMap,
-  getPlayerScore,
-  getPlaytimeMap,
-  queryScoreboard,
-} from '../util/rcon';
+import { getEventMap, getPlayerScore, getPlaytimeMap, queryScoreboard } from '../util/rcon';
 
 export const customScoreboardObjectives = [
   'digs',
@@ -21,10 +16,7 @@ export const customScoreboardObjectives = [
   // 'digevent',
 ];
 
-const scoreboardObjectives = [
-  ...Object.keys(dictionary119).map((key) => key),
-  ...customScoreboardObjectives,
-];
+const scoreboardObjectives = [...Object.keys(dictionary119).map((key) => key), ...customScoreboardObjectives];
 
 const choices = [
   { name: 'mined', value: 'm-' },
@@ -96,10 +88,7 @@ export default new Command({
     await interaction.deferReply();
 
     const subcommand = args.getSubcommand() as 'leaderboard' | 'players';
-    const action = args.getString(
-      'action',
-      true,
-    ) as typeof choices[number]['value'];
+    const action = args.getString('action', true) as typeof choices[number]['value'];
 
     const displayAction = choices.find((choice) => {
       return action === choice.value;
@@ -111,9 +100,7 @@ export default new Command({
 
     const item = args.getString('item', true);
 
-    const scoreboardName = (
-      action !== 'custom' ? action + item : item
-    ) as TScoreboards;
+    const scoreboardName = (action !== 'custom' ? action + item : item) as TScoreboards;
 
     if (!scoreboardObjectives.includes(scoreboardName)) {
       return interaction.editReply('This objective does not exist!');
@@ -132,9 +119,7 @@ export default new Command({
         }
 
         if (scoreboardMap.size === 0) {
-          return interaction.editReply(
-            'There are no entries on that scoreboard yet.',
-          );
+          return interaction.editReply('There are no entries on that scoreboard yet.');
         }
 
         const leaderboard = Array.from(scoreboardMap.entries())
@@ -165,27 +150,20 @@ export default new Command({
         const score = await getPlayerScore(ingameName, scoreboardName);
 
         if (score === undefined) {
-          return interaction.editReply(
-            `Cannot find score ${scoreboardName} for ${ingameName}!`,
-          );
+          return interaction.editReply(`Cannot find score ${scoreboardName} for ${ingameName}!`);
         }
 
-        const val =
-          scoreboardName !== 'playtime' ? score : Math.round(score / 20 / 3600);
+        const val = scoreboardName !== 'playtime' ? score : Math.round(score / 20 / 3600);
 
         return interaction.editReply(
-          `Player _${ingameName}_ has ${inlineCode(
-            val.toString(),
-          )} for scoreboard: **${displayAction} ${item}**.`,
+          `Player _${ingameName}_ has ${inlineCode(val.toString())} for scoreboard: **${displayAction} ${item}**.`,
         );
       }
     } catch (err) {
       return handleInteractionError({
         interaction,
         err,
-        message: `There was an error trying to query scoreboard ${inlineCode(
-          displayAction,
-        )}`,
+        message: `There was an error trying to query scoreboard ${inlineCode(displayAction)}`,
       });
     }
   },
@@ -195,10 +173,7 @@ registerFont(path.join(projectPaths.sources, 'assets/minecraft.ttf'), {
   family: 'minecraft',
 });
 
-function scoreboardToImage(
-  scoreboardName: string,
-  scoreboardData: [string, number][],
-) {
+function scoreboardToImage(scoreboardName: string, scoreboardData: [string, number][]) {
   const enum ScoreboardConstants {
     gray = '#BFBFBF',
     red = '#FF5555',
@@ -233,12 +208,7 @@ function scoreboardToImage(
     scoreboardTitle = `${title}...`;
   }
 
-  const titlePos = [
-    Math.floor(
-      (ScoreboardConstants.width - ctx.measureText(scoreboardTitle).width) / 2,
-    ),
-    20,
-  ];
+  const titlePos = [Math.floor((ScoreboardConstants.width - ctx.measureText(scoreboardTitle).width) / 2), 20];
   const playerAndScorePos: [number, number] = [2, 50];
 
   if (!titlePos[0] || !titlePos[1]) {
@@ -254,11 +224,7 @@ function scoreboardToImage(
   scoreboardData.forEach((i) => {
     // Write the player name
     ctx.fillStyle = ScoreboardConstants.gray;
-    ctx.fillText(
-      i[0],
-      playerAndScorePos[0],
-      playerAndScorePos[1] + counter * ScoreboardConstants.spacing,
-    );
+    ctx.fillText(i[0], playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
 
     // Write the score
     ctx.fillStyle = ScoreboardConstants.red;
@@ -281,11 +247,7 @@ function scoreboardToImage(
 
   // Write 'Total' text
   ctx.fillStyle = ScoreboardConstants.white;
-  ctx.fillText(
-    'Total',
-    playerAndScorePos[0],
-    playerAndScorePos[1] + counter * ScoreboardConstants.spacing,
-  );
+  ctx.fillText('Total', playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
 
   return canvas.toBuffer('image/png');
 }

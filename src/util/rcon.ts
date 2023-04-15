@@ -1,23 +1,18 @@
 import { queryFull, RCON } from 'minecraft-server-util';
-import { config } from '../config/config';
-import type { TMobcap, TScoreboards, TServerChoice } from '../types/minecraft';
+import { config, ServerChoice } from '../config';
+import type { TMobcap, TScoreboards } from '../types/minecraft';
 
 export const getServerStatus = async (host: string, port: number) => {
   return await queryFull(host, port, { enableSRV: true });
 };
 
-export const getPlayerCount = async (server: TServerChoice) => {
+export const getPlayerCount = async (server: ServerChoice) => {
   const { host, port } = config.mcConfig[server];
   const data = await getServerStatus(host, port);
   return data.players.online;
 };
 
-export const runRconCommand = async (
-  host: string,
-  rconPort: number,
-  rconPassword: string,
-  command: string,
-) => {
+export const runRconCommand = async (host: string, rconPort: number, rconPassword: string, command: string) => {
   const rconClient: RCON = new RCON();
 
   await rconClient.connect(host, rconPort);
@@ -29,11 +24,7 @@ export const runRconCommand = async (
   return data;
 };
 
-export const queryMspt = async (
-  host: string,
-  rconPort: number,
-  rconPassword: string,
-) => {
+export const queryMspt = async (host: string, rconPort: number, rconPassword: string) => {
   const command = `script run reduce(system_info('server_last_tick_times'), _a+_, 0)/100`;
   const data = await runRconCommand(host, rconPort, rconPassword, command);
 
@@ -56,11 +47,7 @@ export const queryMspt = async (
   return { mspt, tps };
 };
 
-export const queryMobcap = async (
-  host: string,
-  rconPort: number,
-  rconPassword: string,
-) => {
+export const queryMobcap = async (host: string, rconPort: number, rconPassword: string) => {
   const dimensions = ['overworld', 'the_nether', 'the_end'];
 
   const mobcap: Record<string, string> = {};
@@ -69,21 +56,13 @@ export const queryMobcap = async (
     const query = `execute in minecraft:${dim} run script run get_mob_counts('monster')`;
     const res = await runRconCommand(host, rconPort, rconPassword, query);
 
-    const data = res
-      .replace(/^.{0,3}| \(.*\)|[[\]]/g, '')
-      .replace(/, /g, ' | ');
+    const data = res.replace(/^.{0,3}| \(.*\)|[[\]]/g, '').replace(/, /g, ' | ');
 
     mobcap[dim as keyof TMobcap] = data;
   }
 
   const isMobcap = (obj: unknown): obj is TMobcap => {
-    return (
-      typeof obj === 'object' &&
-      obj !== null &&
-      'overworld' in obj &&
-      'the_nether' in obj &&
-      'the_end' in obj
-    );
+    return typeof obj === 'object' && obj !== null && 'overworld' in obj && 'the_nether' in obj && 'the_end' in obj;
   };
 
   if (!isMobcap(mobcap)) {
@@ -92,17 +71,8 @@ export const queryMobcap = async (
   return mobcap;
 };
 
-export const getWhitelist = async (
-  host: string,
-  rconPort: number,
-  rconPasswd: string,
-) => {
-  const response = await runRconCommand(
-    host,
-    rconPort,
-    rconPasswd,
-    'whitelist list',
-  );
+export const getWhitelist = async (host: string, rconPort: number, rconPasswd: string) => {
+  const response = await runRconCommand(host, rconPort, rconPasswd, 'whitelist list');
 
   const noWhitelist = 'There are no whitelisted players';
 
@@ -116,9 +86,7 @@ export const getWhitelist = async (
     throw new Error('Failed to parse the response correctly!');
   }
 
-  return splitResponse
-    .split(', ')
-    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  return splitResponse.split(', ').sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
 
 export const queryScoreboard = async (scoreboardName: TScoreboards) => {
@@ -126,9 +94,7 @@ export const queryScoreboard = async (scoreboardName: TScoreboards) => {
   const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
   const data = await runRconCommand(host, rconPort, rconPasswd, query);
 
-  const map = new Map<string, number>(
-    Object.entries(JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''))),
-  );
+  const map = new Map<string, number>(Object.entries(JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''))));
 
   map.forEach((val, name) => {
     if (val === null) {
@@ -167,9 +133,7 @@ export const getEventMap = async () => {
 export const getPlaytimeMap = async () => {
   const playtimeMap = await queryScoreboard('playtime');
 
-  playtimeMap.forEach((ticks, name) =>
-    playtimeMap.set(name, Math.floor(ticks / 20 / 3600) ?? 0),
-  );
+  playtimeMap.forEach((ticks, name) => playtimeMap.set(name, Math.floor(ticks / 20 / 3600) ?? 0));
 
   return playtimeMap;
 };
@@ -177,12 +141,7 @@ export const getPlaytimeMap = async () => {
 export const getPlayerScore = async (ign: string, scoreboard: TScoreboards) => {
   const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
 
-  const res = await runRconCommand(
-    host,
-    rconPort,
-    rconPasswd,
-    `scoreboard players get ${ign} ${scoreboard}`,
-  );
+  const res = await runRconCommand(host, rconPort, rconPasswd, `scoreboard players get ${ign} ${scoreboard}`);
 
   if (res === `Can't get value of ${scoreboard} for ${ign}; none is set`) {
     return 0;

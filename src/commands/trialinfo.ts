@@ -60,8 +60,7 @@ export default new Command({
       return handleInteractionError({
         interaction,
         err,
-        message:
-          'Something went wrong trying to execute the trialinfo command!',
+        message: 'Something went wrong trying to execute the trialinfo command!',
       });
     }
   },
