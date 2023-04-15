@@ -7,11 +7,10 @@ import {
   type GuildMember,
   type Role,
   type Snowflake,
-  type User,
 } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
-import { config } from '../config/config';
+import { config } from '../config';
 import { isGuildMember } from '../util/assertions';
 import { capitalizeFirstLetter } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
@@ -64,49 +63,41 @@ export default new Command({
   ],
   execute: async ({ interaction, args }) => {
     await interaction.deferReply();
-    const subcommand: string = args.getSubcommand();
+    const subcommand = args.getSubcommand() as 'server' | 'user' | 'members' | 'admins' | 'avatar';
+    const { guild } = interaction;
 
-    // this check is most likely not necessary, but it helps to make sure the command doesn't break and satisfies TS.
-    if (!interaction.guild) {
+    if (!guild) {
       return interaction.reply('This command can only be used in a guild.');
     }
 
-    const guildIconURL = interaction.guild.iconURL();
+    const guildIconURL: string | null = guild.iconURL();
 
     if (!guildIconURL) {
-      return interaction.reply(
-        `Cannot find the server icon of ${interaction.guild}!`,
-      );
+      return interaction.reply(`Cannot find the server icon of ${interaction.guild}!`);
     }
 
     try {
       if (subcommand === 'server') {
         // generates an invite link, unless there there is already one that satisfies the specifications.
-        const inviteLink = await interaction.guild.invites.create(
-          config.channels.invite,
-          {
-            maxAge: 0,
-            maxUses: 0,
-            unique: false,
-          },
-        );
+        const inviteLink = await guild.invites.create(config.channels.invite, {
+          maxAge: 0,
+          maxUses: 0,
+          unique: false,
+        });
 
         const serverEmbed = new KoalaEmbedBuilder(interaction.user, {
-          title: `Server Info ${interaction.guild.name}`,
+          title: `Server Info ${guild.name}`,
           thumbnail: {
             url: guildIconURL,
           },
           fields: [
             {
               name: 'Membercount',
-              value: `${interaction.guild.memberCount}`,
+              value: `${guild.memberCount}`,
             },
             {
               name: 'Guild created',
-              value: `${time(interaction.guild.createdAt, 'D')}\n(${time(
-                interaction.guild.createdAt,
-                'R',
-              )})`,
+              value: `${time(guild.createdAt, 'D')}\n(${time(guild.createdAt, 'R')})`,
             },
             {
               name: 'Permanent Invite Link',
@@ -115,22 +106,26 @@ export default new Command({
           ],
         });
 
-        return interaction.editReply({ embeds: [serverEmbed] });
-      } else if (subcommand === 'user') {
+        interaction.editReply({ embeds: [serverEmbed] });
+
+        return;
+      }
+
+      if (subcommand === 'user') {
         const targetMember = args.getMember('target');
         const targetUser = args.getUser('target');
 
-        if (!targetUser) return interaction.reply(`Cannot find that user!`);
+        if (!targetUser) {
+          interaction.reply(`Cannot find that user!`);
+          return;
+        }
 
         const userFields: EmbedField[] = [
           { name: 'Username', value: targetUser.tag, inline: false },
           { name: 'User ID', value: targetUser.id, inline: false },
           {
             name: 'Joined Discord on',
-            value: `${time(targetUser.createdAt, 'D')}\n(${time(
-              targetUser.createdAt,
-              'R',
-            )})`,
+            value: `${time(targetUser.createdAt, 'D')}\n(${time(targetUser.createdAt, 'R')})`,
             inline: true,
           },
         ];
@@ -149,10 +144,7 @@ export default new Command({
           if (targetMember.joinedAt) {
             const joinedField: EmbedField = {
               name: 'Joined this server on',
-              value: `${time(targetMember.joinedAt, 'D')}\n(${time(
-                targetMember.joinedAt,
-                'R',
-              )})`,
+              value: `${time(targetMember.joinedAt, 'D')}\n(${time(targetMember.joinedAt, 'R')})`,
               inline: true,
             };
 
@@ -174,15 +166,18 @@ export default new Command({
           userEmbed.setFields([...userFields, ...memberFields]);
         }
 
-        return interaction.editReply({ embeds: [userEmbed] });
-      } else if (subcommand === 'members' || subcommand === 'admins') {
-        const allMembers: Collection<Snowflake, GuildMember> =
-          await interaction.guild.members.fetch();
+        interaction.editReply({ embeds: [userEmbed] });
+
+        return;
+      }
+
+      if (subcommand === 'members' || subcommand === 'admins') {
+        const allMembers: Collection<Snowflake, GuildMember> = await guild.members.fetch();
 
         const targetMembers: GuildMember[] = [];
 
         for (const memberTuple of allMembers) {
-          const member: GuildMember = memberTuple[1];
+          const member = memberTuple[1];
 
           if (member.roles.cache.has(config.roles[subcommand])) {
             targetMembers.push(member);
@@ -197,8 +192,7 @@ export default new Command({
         );
 
         // using nullish coalescing to protect the function from strings that are less than 2 characters long
-        const capitalizedSubcommand =
-          capitalizeFirstLetter(subcommand) ?? subcommand;
+        const capitalizedSubcommand = capitalizeFirstLetter(subcommand) ?? subcommand;
 
         const roleEmbed = new KoalaEmbedBuilder(interaction.user, {
           title: `Info ${capitalizedSubcommand}`,
@@ -217,19 +211,22 @@ export default new Command({
           ],
         });
 
-        return interaction.editReply({ embeds: [roleEmbed] });
-      } else if (subcommand === 'avatar') {
-        const target: User | null = args.getUser('target');
+        interaction.editReply({ embeds: [roleEmbed] });
 
-        if (!target) return interaction.editReply('Cannot find that user!');
+        return;
+      }
+
+      if (subcommand === 'avatar') {
+        const target = args.getUser('target');
+
+        if (!target) {
+          interaction.editReply('Cannot find that user!');
+          return;
+        }
 
         const avatarURL: string = target.displayAvatarURL({ size: 4096 });
 
-        return interaction.editReply({ files: [avatarURL] });
-      } else {
-        return interaction.editReply(
-          'Cannot process the subcommand you chose!',
-        );
+        interaction.editReply({ files: [avatarURL] });
       }
     } catch (err) {
       return handleInteractionError({
