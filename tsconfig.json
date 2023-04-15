@@ -1,12 +1,6 @@
 {
   "include": ["src", "environment.d.ts"],
-  "exclude": [
-    "node_modules",
-    "**/*.template.ts",
-    "build",
-    "dist",
-    "src/**/*.js"
-  ],
+  "exclude": ["node_modules", "**/*.template.ts", "build", "dist", "src/**/*.js"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
