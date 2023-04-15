@@ -22,8 +22,7 @@ export default new Command({
   execute: async ({ interaction, args }) => {
     await interaction.deferReply();
 
-    const choice = args.getString('animal');
-    if (!choice) return interaction.editReply('Please select an animal.');
+    const choice = args.getString('animal', true) as 'fox' | 'cat' | 'dog';
 
     const apiURL = {
       fox: 'https://randomfox.ca/floof/',
@@ -32,16 +31,18 @@ export default new Command({
     } as const;
 
     try {
-      const { data } = await axios.get(apiURL[choice as keyof typeof apiURL]);
+      const { data } = await axios.get(apiURL[choice]);
       const imageURL: string = choice === 'fox' ? data.image : data[0].url;
 
-      return interaction.editReply({ files: [imageURL] });
+      interaction.editReply({ files: [imageURL] });
+      return;
     } catch (err) {
-      return handleInteractionError({
+      handleInteractionError({
         interaction,
         err,
         message: `Something went wrong trying to get a picture of a ${choice}.`,
       });
+      return;
     }
   },
 });
