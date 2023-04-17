@@ -2,33 +2,28 @@ import { registerFont, createCanvas } from 'canvas';
 import { ApplicationCommandOptionType, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import path from 'path';
-import dictionary119 from '../assets/dictionary_1.19';
+import allScboreboards from '../assets/scoreboards_1.19.2';
 import { config, projectPaths } from '../config';
-import type { TScoreboards } from '../types/types';
 import { handleInteractionError } from '../util/loggers';
 import { runRconCommand } from '../util/rcon';
 
-export const customScoreboardObjectives = [
-  'digs',
-  'deaths',
-  'bedrock_removed',
-  'playtime',
-  // 'digevent',
-];
-
-const scoreboardObjectives = [...Object.keys(dictionary119).map((key) => key), ...customScoreboardObjectives];
+const scoreboardMap = allScboreboards;
+export type Scoreboard = typeof allScboreboards[number]['stat'];
 
 const choices = [
-  { name: 'mined', value: 'm-' },
-  { name: 'used', value: 'u-' },
-  { name: 'crafted', value: 'c-' },
-  { name: 'broken (tools)', value: 'b-' },
-  { name: 'picked up', value: 'p-' },
-  { name: 'dropped', value: 'd-' },
-  { name: 'killed', value: 'k-' },
-  { name: 'killed by', value: 'kb-' },
-  { name: 'custom', value: 'custom' },
+  { name: 'mined', value: 'm' },
+  { name: 'used', value: 'u' },
+  { name: 'crafted', value: 'c' },
+  { name: 'broken (tools)', value: 'b' },
+  { name: 'picked up', value: 'p' },
+  { name: 'dropped', value: 'd' },
+  { name: 'killed', value: 'k' },
+  { name: 'killed by', value: 'kb' },
+  { name: 'custom', value: 'z' },
+  { name: 'extra', value: 'extra' },
 ] as const;
+
+export type ScoreboardChoice = typeof choices[number]['value'];
 
 export default new Command({
   name: 'scoreboard',
@@ -88,93 +83,159 @@ export default new Command({
     await interaction.deferReply();
 
     const subcommand = args.getSubcommand() as 'leaderboard' | 'players';
-    const action = args.getString('action', true) as typeof choices[number]['value'];
-
-    const displayAction = choices.find((choice) => {
-      return action === choice.value;
-    })?.name;
-
-    if (!displayAction) {
-      return interaction.editReply('Cannot find action name to display!');
-    }
-
+    const action = args.getString('action', true) as ScoreboardChoice;
     const item = args.getString('item', true);
 
-    const scoreboardName = (action !== 'custom' ? action + item : item) as TScoreboards;
+    const scoreboardChoice = action !== 'extra' ? `${action}-${item}` : item;
+    const scoreboardName = scoreboardMap.find((x) => x.stat === scoreboardChoice)?.translation;
 
-    if (!scoreboardObjectives.includes(scoreboardName)) {
-      return interaction.editReply('This objective does not exist!');
+    if (!scoreboardName) {
+      return interaction.editReply('This scoreboard does not exist!');
     }
 
     try {
       if (subcommand === 'leaderboard') {
-        let scoreboardMap: Map<string, number>;
+        let buffer: Buffer;
 
-        if (item === 'digevent') {
-          scoreboardMap = await getEventMap();
-        } else if (item === 'playtime') {
-          scoreboardMap = await getPlaytimeMap();
+        if (scoreboardChoice === 'z-play_time') {
+          const leaderboard = await getPlaytimeLeaderboard();
+          buffer = scoreboardToImage('SMP Play Time (hours)', leaderboard);
         } else {
-          scoreboardMap = await queryScoreboard(scoreboardName as TScoreboards);
+          const leaderboard = await queryScoreboard(scoreboardChoice as Scoreboard);
+          buffer = scoreboardToImage(scoreboardName, leaderboard);
         }
 
-        if (scoreboardMap.size === 0) {
-          return interaction.editReply('There are no entries on that scoreboard yet.');
-        }
+        interaction.editReply({ files: [{ attachment: buffer }] });
 
-        const leaderboard = Array.from(scoreboardMap.entries())
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 15);
-
-        const choice = choices.find((x) => x.value === action);
-
-        if (!choice) {
-          return interaction.editReply('This action does not exist!');
-        }
-
-        const prettyfiedObjective =
-          action !== 'custom'
-            ? scoreboardName.replace(action, choice.name + ' ')
-            : item === 'playtime'
-            ? 'playtime (hours)'
-            : item;
-
-        const buffer = scoreboardToImage(prettyfiedObjective, leaderboard);
-
-        return interaction.editReply({ files: [{ attachment: buffer }] });
+        return;
       }
 
       if (subcommand === 'players') {
         const ingameName = args.getString('playername', true);
 
-        const score = await getPlayerScore(ingameName, scoreboardName);
+        const score = await getPlayerScore(ingameName, scoreboardChoice as Scoreboard);
 
         if (score === undefined) {
-          return interaction.editReply(`Cannot find score ${scoreboardName} for ${ingameName}!`);
+          interaction.editReply(`Cannot find score ${scoreboardName} for ${ingameName}!`);
+          return;
         }
 
-        const val = scoreboardName !== 'playtime' ? score : Math.round(score / 20 / 3600);
+        const val = scoreboardChoice !== 'z-play_time' ? score : Math.round(score / 20 / 3600);
+        const displayAction = scoreboardChoice === 'z-play_time' ? 'SMP Play Time (hours)' : scoreboardName;
 
         return interaction.editReply(
-          `Player _${ingameName}_ has ${inlineCode(val.toString())} for scoreboard: **${displayAction} ${item}**.`,
+          `Player _${ingameName}_ has ${inlineCode(val.toString())} for scoreboard: **${displayAction}**.`,
         );
       }
     } catch (err) {
       return handleInteractionError({
         interaction,
         err,
-        message: `There was an error trying to query scoreboard ${inlineCode(displayAction)}`,
+        message: `There was an error trying to query scoreboard`,
       });
     }
   },
 });
 
+const eventScoreboards = [
+  'event_netherite_pick',
+  'event_diamond_pick',
+  'event_netherite_shovel',
+  'event_diamond_shovel',
+  'event_netherite_axe',
+  'event_diamond_axe',
+  'event_netherite_hoe',
+  'event_diamond_hoe',
+] as const;
+
+type EventScoreboard = typeof eventScoreboards[number];
+
+type QueryScoreboardResponse = {
+  list: {
+    ign: string;
+    score: number;
+  }[];
+  total: number;
+};
+
+async function queryScoreboard(scoreboardName: Scoreboard | EventScoreboard): Promise<QueryScoreboardResponse> {
+  const { host, rconPort, rconPasswd } = config.mcConfig.smp;
+  const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
+  const data = await runRconCommand(host, rconPort, rconPasswd, query);
+
+  const response: Record<string, number | null> = JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''));
+
+  const list = Object.entries(response)
+    .filter(([, score]) => score !== null)
+    .map(([ign, score]) => ({
+      ign,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      score: score!,
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  const total = list.reduce((acc, cur) => acc + cur.score, 0);
+
+  return {
+    list,
+    total,
+  };
+}
+
+// async function getEventMap() {
+//   const combinedMap: Map<string, number> = new Map();
+
+//   for (const sb of eventScoreboards) {
+//     const scoreMap = await queryScoreboard(sb);
+
+//     for (const [name, score] of scoreMap) {
+//       combinedMap.set(name, (combinedMap.get(name) ?? 0) + score);
+//     }
+//   }
+
+//   return combinedMap;
+// }
+
+async function getPlaytimeLeaderboard(): Promise<QueryScoreboardResponse> {
+  const result = await queryScoreboard('z-play_time');
+  result.total = Math.round(result.total / 20 / 3600);
+
+  for (const [i, { score }] of result.list.entries()) {
+    const entry = result.list[i];
+    if (!entry) continue;
+
+    entry.score = Math.round(score / 20 / 3600);
+  }
+
+  return result;
+}
+
+async function getPlayerScore(ign: string, scoreboard: Scoreboard) {
+  const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
+
+  const res = await runRconCommand(host, rconPort, rconPasswd, `scoreboard players get ${ign} ${scoreboard}`);
+
+  if (res === `Can't get value of ${scoreboard} for ${ign}; none is set`) {
+    return 0;
+  }
+
+  if (res.startsWith(`${ign} has`)) {
+    try {
+      return parseInt(res.split(' ')[2] as string, 10);
+    } catch {
+      return;
+    }
+  }
+
+  return;
+}
+
 registerFont(path.join(projectPaths.sources, 'assets/minecraft.ttf'), {
   family: 'minecraft',
 });
 
-function scoreboardToImage(scoreboardName: string, scoreboardData: [string, number][]) {
-  const enum ScoreboardConstants {
+function scoreboardToImage(scoreboardName: string, scoreboardData: QueryScoreboardResponse) {
+  enum ScoreboardConstants {
     gray = '#BFBFBF',
     red = '#FF5555',
     white = '#FFFFFF',
@@ -182,10 +243,14 @@ function scoreboardToImage(scoreboardName: string, scoreboardData: [string, numb
     spacing = 20,
   }
 
+  if (scoreboardData.list.length > 15) {
+    scoreboardData.list.splice(16, scoreboardData.list.length - 16);
+  }
+
   const canvas = createCanvas(250, 0);
   const ctx = canvas.getContext('2d');
 
-  const height = scoreboardData.length * ScoreboardConstants.spacing + 55;
+  const height = scoreboardData.list.length * ScoreboardConstants.spacing + 55;
   canvas.height = height;
 
   ctx.fillStyle = '#2c2f33';
@@ -220,28 +285,26 @@ function scoreboardToImage(scoreboardName: string, scoreboardData: [string, numb
   ctx.fillText(scoreboardTitle, titlePos[0], titlePos[1], 240);
 
   let counter = 0;
-  let total = 0;
-  scoreboardData.forEach((i) => {
+  scoreboardData.list.forEach((e) => {
     // Write the player name
     ctx.fillStyle = ScoreboardConstants.gray;
-    ctx.fillText(i[0], playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
+    ctx.fillText(e.ign, playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
 
     // Write the score
     ctx.fillStyle = ScoreboardConstants.red;
     ctx.fillText(
-      i[1].toString(),
-      ScoreboardConstants.width - ctx.measureText(i[1].toString()).width,
+      e.score.toString(),
+      ScoreboardConstants.width - ctx.measureText(e.score.toString()).width,
       playerAndScorePos[1] + counter * ScoreboardConstants.spacing,
     );
 
     counter += 1;
-    total += i[1];
   });
 
   // Write the total score (in red)
   ctx.fillText(
-    String(total),
-    ScoreboardConstants.width - ctx.measureText(String(total)).width,
+    scoreboardData.total.toString(),
+    ScoreboardConstants.width - ctx.measureText(scoreboardData.total.toString()).width,
     playerAndScorePos[1] + counter * ScoreboardConstants.spacing,
   );
 
@@ -250,73 +313,4 @@ function scoreboardToImage(scoreboardName: string, scoreboardData: [string, numb
   ctx.fillText('Total', playerAndScorePos[0], playerAndScorePos[1] + counter * ScoreboardConstants.spacing);
 
   return canvas.toBuffer('image/png');
-}
-
-async function queryScoreboard(scoreboardName: TScoreboards) {
-  const { host, rconPort, rconPasswd } = config.mcConfig.smp;
-  const query = `script run scores={};for(system_info('server_whitelist'), scores:_=scoreboard('${scoreboardName}', _));encode_json(scores)`;
-  const data = await runRconCommand(host, rconPort, rconPasswd, query);
-
-  const map = new Map<string, number>(Object.entries(JSON.parse(data.replace(/\(.+\)$/, '').replace(/^ =/, ''))));
-
-  map.forEach((val, name) => {
-    if (val === null) {
-      map.set(name, 0);
-    }
-  });
-
-  return map;
-}
-
-export const customScoreboards = [
-  'event_netherite_pick',
-  'event_diamond_pick',
-  'event_netherite_shovel',
-  'event_diamond_shovel',
-  'event_netherite_axe',
-  'event_diamond_axe',
-  'event_netherite_hoe',
-  'event_diamond_hoe',
-] as const;
-
-async function getEventMap() {
-  const combinedMap: Map<string, number> = new Map();
-
-  for (const name of customScoreboards) {
-    const scoreMap = await queryScoreboard(name);
-
-    for (const [name, score] of scoreMap) {
-      combinedMap.set(name, (combinedMap.get(name) ?? 0) + score);
-    }
-  }
-
-  return combinedMap;
-}
-
-async function getPlaytimeMap() {
-  const playtimeMap = await queryScoreboard('playtime');
-
-  playtimeMap.forEach((ticks, name) => playtimeMap.set(name, Math.floor(ticks / 20 / 3600) ?? 0));
-
-  return playtimeMap;
-}
-
-async function getPlayerScore(ign: string, scoreboard: TScoreboards) {
-  const { host, rconPort, rconPasswd } = config.mcConfig['smp'];
-
-  const res = await runRconCommand(host, rconPort, rconPasswd, `scoreboard players get ${ign} ${scoreboard}`);
-
-  if (res === `Can't get value of ${scoreboard} for ${ign}; none is set`) {
-    return 0;
-  }
-
-  if (res.startsWith(`${ign} has`)) {
-    try {
-      return parseInt(res.split(' ')[2] as string, 10);
-    } catch (err) {
-      return;
-    }
-  }
-
-  return;
 }
