@@ -193,8 +193,6 @@ export const projectPaths = {
   events: path.join(path.dirname(__dirname), `${src}/events`),
 };
 
-console.log(projectPaths);
-
 export type ChannelConfig = Readonly<z.infer<typeof channelConfigSchema>>;
 export type EmojiConfig = Readonly<z.infer<typeof emojiConfigSchema>>;
 export type MCConfig = Readonly<z.infer<typeof mcConfigSchema>>;
