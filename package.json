@@ -9,8 +9,8 @@
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "tsup src/index.ts --format cjs && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
-    "deploy": "tsup src/index.ts --format cjs && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && NODE_ENV=production node dist/index.js"
+    "build": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
+    "deploy": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && NODE_ENV=production node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,6 @@
     "minecraft-server-util": "^5.3.1",
     "ptero-client": "^1.1.3",
     "save-dev": "^0.0.1-security",
-    "tsup": "^6.7.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
