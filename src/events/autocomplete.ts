@@ -8,6 +8,7 @@ import { getAllTodos, getMemberNames } from '../util/prisma';
 import { getModNames, ptero } from '../util/pterodactyl';
 import { getWhitelist } from '../util/rcon';
 import type { AutocompleteFocusedOption } from 'discord.js';
+import { getWaypoints } from '../commands/waypoint';
 
 export default new Event('interactionCreate', async (interaction) => {
   if (!interaction.isAutocomplete()) return;
@@ -24,7 +25,6 @@ export default new Event('interactionCreate', async (interaction) => {
   if (!guild) return;
 
   const focused = interaction.options.getFocused(true);
-  const subcommand = interaction.options.getSubcommand();
 
   try {
     if (interaction.commandName === 'scoreboard') {
@@ -35,13 +35,11 @@ export default new Event('interactionCreate', async (interaction) => {
         const whitelistNames = await getWhitelist(host, rconPort, rconPasswd);
 
         interaction.respond(mapChoices(whitelistNames, focused));
-        return;
       }
 
       if (focused.name === 'item') {
         if (action === 'extra') {
           interaction.respond(mapChoices(['digs', 'bedrock_removed'], focused));
-          return;
         }
 
         if (!action) {
@@ -58,7 +56,7 @@ export default new Event('interactionCreate', async (interaction) => {
       }
     }
 
-    if (interaction.commandName === 'todo' && subcommand !== 'add') {
+    if (interaction.commandName === 'todo' && interaction.options.getSubcommand() !== 'add') {
       const todoList = await getAllTodos();
       const todoListChoice = todoList.map((todo) => todo.title);
 
@@ -91,7 +89,7 @@ export default new Event('interactionCreate', async (interaction) => {
       if (!serverChoice) return interaction.respond([]);
 
       const modNames = await getModNames(serverChoice);
-      const modNamesChoice = subcommand === 'enable' ? modNames.disabled : modNames.enabled;
+      const modNamesChoice = interaction.options.getSubcommand() === 'enable' ? modNames.disabled : modNames.enabled;
 
       interaction.respond(mapChoices(modNamesChoice, focused));
     }
@@ -109,6 +107,17 @@ export default new Event('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'member') {
       interaction.respond(mapChoices(await getMemberNames(guild.members), focused));
+    }
+
+    if (interaction.commandName === 'waypoint') {
+      const waypoints = await getWaypoints();
+
+      interaction.respond(
+        mapChoices(
+          waypoints.map((w) => w.name),
+          focused,
+        ),
+      );
     }
   } catch (err) {
     return handleEventError({
