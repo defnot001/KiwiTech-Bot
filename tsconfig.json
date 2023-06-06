@@ -36,7 +36,6 @@
     "removeComments": true,
     "noPropertyAccessFromIndexSignature": true,
     "incremental": true,
-    "noImplicitOverride": true,
-    "importsNotUsedAsValues": "error"
+    "noImplicitOverride": true
   }
 }
