@@ -1,9 +1,6 @@
 {
   "include": ["src", "environment.d.ts"],
   "exclude": ["node_modules", "**/*.template.ts", "build", "dist", "src/**/*.js"],
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  },
   "compilerOptions": {
     "lib": ["ESNext"],
     "strict": true,
@@ -25,7 +22,6 @@
     "strictBindCallApply": true,
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
-    "importHelpers": true,
     "alwaysStrict": true,
     "allowUnreachableCode": false,
     "noUnusedLocals": true,
@@ -35,7 +31,6 @@
     "noUncheckedIndexedAccess": true,
     "removeComments": true,
     "noPropertyAccessFromIndexSignature": true,
-    "incremental": true,
     "noImplicitOverride": true
   }
 }
