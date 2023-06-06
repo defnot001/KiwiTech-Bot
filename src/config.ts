@@ -3,9 +3,11 @@ import path from 'path';
 import { env } from 'process';
 import { z } from 'zod';
 
-const envPath = path.join(path.dirname(__dirname), `./.env.${env['NODE_ENV']}`);
+const nodeEnv = env['NODE_ENV'] ?? 'development';
 
-console.log(`Loading ${env['NODE_ENV']} environment variables...`);
+const envPath = path.join(path.dirname(__dirname), `./.env.${nodeEnv}`);
+
+console.log(`Loading ${nodeEnv} environment variables...`);
 
 dotenv.config({
   path: envPath,
@@ -186,11 +188,11 @@ const importedConfig = {
 
 export const config = configSchema.parse(importedConfig);
 
-const src = env['NODE_ENV'] === 'production' ? 'dist' : 'src';
+const sources = nodeEnv === 'development' ? 'src' : 'dist';
 export const projectPaths = {
-  sources: path.join(path.dirname(__dirname), src),
-  commands: path.join(path.dirname(__dirname), `${src}/commands`),
-  events: path.join(path.dirname(__dirname), `${src}/events`),
+  sources: path.join(path.dirname(__dirname), sources),
+  commands: path.join(path.dirname(__dirname), `${sources}/commands`),
+  events: path.join(path.dirname(__dirname), `${sources}/events`),
 };
 
 export type ChannelConfig = Readonly<z.infer<typeof channelConfigSchema>>;
