@@ -5,7 +5,7 @@
   "main": "./src/index.ts",
   "type": "commonjs",
   "scripts": {
-    "dev": "ts-node-esm src/index.ts",
+    "dev": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf && node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
@@ -42,9 +42,6 @@
     "@typescript-eslint/parser": "^5.48.0",
     "eslint": "^8.31.0",
     "prisma": "^4.10.1",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.1.0",
-    "typescript": "^4.9.4",
-    "vitest": "^0.26.3"
+    "typescript": "^4.9.4"
   }
 }
