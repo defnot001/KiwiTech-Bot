@@ -188,11 +188,10 @@ const importedConfig = {
 
 export const config = configSchema.parse(importedConfig);
 
-const sources = nodeEnv === 'development' ? 'src' : 'dist';
 export const projectPaths = {
-  sources: path.join(path.dirname(__dirname), sources),
-  commands: path.join(path.dirname(__dirname), `${sources}/commands`),
-  events: path.join(path.dirname(__dirname), `${sources}/events`),
+  sources: path.join(path.dirname(__dirname), 'dist'),
+  commands: path.join(path.dirname(__dirname), `dist/commands`),
+  events: path.join(path.dirname(__dirname), `dist/events`),
 };
 
 export type ChannelConfig = Readonly<z.infer<typeof channelConfigSchema>>;
