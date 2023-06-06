@@ -5,8 +5,7 @@
   "main": "./src/index.ts",
   "type": "commonjs",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-esm src/index.ts",
-    "test": "vitest",
+    "dev": "ts-node-esm src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "rm -rf dist && tsc && cp src/assets/minecraft.ttf dist/assets/minecraft.ttf",
