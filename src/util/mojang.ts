@@ -5,7 +5,10 @@ export async function getUUID(username: string) {
     `https://api.mojang.com/users/profiles/minecraft/${username}`,
   );
 
-  return data;
+  return {
+    id: formatMojangUUID(data.id),
+    name: data.name,
+  };
 }
 
 export async function getMultipleUUIDs(usernames: string[]) {
