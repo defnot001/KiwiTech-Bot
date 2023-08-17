@@ -156,8 +156,6 @@ export default new Command({
 
         const skinUrl = `https://crafatar.com/avatars/${usernames[0]![1]}?overlay&size=512`;
 
-        console.log(skinUrl);
-
         const embed = new KoalaEmbedBuilder(interaction.user, {
           title: `Member Info ${user.username}`,
           thumbnail: {
