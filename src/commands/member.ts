@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, inlineCode, time } from 'discord.js';
+import { ApplicationCommandOptionType, escapeMarkdown, inlineCode, time } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { addMember, getMemberFromID, getMemberNames, removeMember, updateMember } from '../util/prisma';
@@ -157,7 +157,7 @@ export default new Command({
         const skinUrl = `https://crafatar.com/avatars/${usernames[0]![1]}?overlay&size=512`;
 
         const embed = new KoalaEmbedBuilder(interaction.user, {
-          title: `Member Info ${user.username}`,
+          title: `Member Info ${escapeMarkdown(user.username)}`,
           thumbnail: {
             url: skinUrl,
           },
@@ -165,7 +165,7 @@ export default new Command({
             { name: 'Discord ID', value: `${inlineCode(member.discordID)}` },
             {
               name: 'Minecraft Usernames',
-              value: usernames.map(([name, uuid]) => `${name} (${inlineCode(uuid)})`).join('\n'),
+              value: usernames.map(([name, uuid]) => `${escapeMarkdown(name)} (${inlineCode(uuid)})`).join('\n'),
             },
             {
               name: 'Member Since',
@@ -181,7 +181,7 @@ export default new Command({
         });
       } catch {
         interaction.editReply({
-          content: `${user.username} is not a member of ${guild.name}.`,
+          content: `${escapeMarkdown(user.username)} is not a member of ${guild.name}.`,
         });
       }
     }
