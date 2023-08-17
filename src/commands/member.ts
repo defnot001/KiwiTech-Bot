@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, escapeMarkdown, inlineCode, time } from 'discord.js';
+import { ApplicationCommandOptionType, PermissionsBitField, escapeMarkdown, inlineCode, time } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { addMember, getMemberFromID, getMemberNames, removeMember, updateMember } from '../util/prisma';
@@ -187,6 +187,12 @@ export default new Command({
     }
 
     if (subcommand === 'add' || subcommand === 'update') {
+      if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return interaction.editReply({
+          content: 'You must be an Administrator to use this command.',
+        });
+      }
+
       const user = args.getUser('member', true);
       const ign = args.getString('ign', true);
       const trial = args.getBoolean('trial') ?? false;
