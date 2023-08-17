@@ -115,7 +115,7 @@ export default new Command({
 
       const embed = new KoalaEmbedBuilder(interaction.user, {
         title: `Member List for ${guild.name}`,
-        description: memberNames.join('\n'),
+        description: memberNames.map((member) => escapeMarkdown(member)).join('\n'),
       });
 
       if (guild.iconURL()) {
