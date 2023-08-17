@@ -6,7 +6,7 @@ export class JoinLeaveEmbedBuilder extends EmbedBuilder {
     super(data);
 
     this.setAuthor({
-      name: member.user.tag,
+      name: member.user.username,
       iconURL: member.user.displayAvatarURL(),
     });
 

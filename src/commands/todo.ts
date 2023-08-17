@@ -96,7 +96,7 @@ export default new Command({
         title: `${interaction.guild.name} Todo Log`,
         color: config.embedColors.default,
         footer: {
-          text: interaction.user.tag,
+          text: interaction.user.username,
           iconURL: interaction.user.displayAvatarURL(),
         },
         timestamp: new Date(),

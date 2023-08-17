@@ -120,7 +120,7 @@ export default new Command({
         }
 
         const userFields: EmbedField[] = [
-          { name: 'Username', value: targetUser.tag, inline: false },
+          { name: 'Username', value: targetUser.username, inline: false },
           { name: 'User ID', value: targetUser.id, inline: false },
           {
             name: 'Joined Discord on',

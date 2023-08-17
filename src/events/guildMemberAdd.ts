@@ -5,7 +5,7 @@ import { getJoinedAtComponent } from '../util/helpers';
 import { getTextChannelFromID, handleEventError } from '../util/loggers';
 export default new Event('guildMemberAdd', async (member) => {
   try {
-    console.log(`${member.user.tag} joined ${member.guild.name}.`);
+    console.log(`${member.user.username} joined ${member.guild.name}.`);
 
     const memberLog = await getTextChannelFromID(member.guild, 'memberLog');
     const joinedAt = getJoinedAtComponent(member);
@@ -14,12 +14,9 @@ export default new Event('guildMemberAdd', async (member) => {
     const embedColor = colorFromDuration(accountAge) || 3_092_790;
 
     const joinEmbed = new JoinLeaveEmbedBuilder(member, 'joined', {
-      description: `Username: ${userMention(
+      description: `Username: ${userMention(member.user.id)}\nUser ID: ${inlineCode(
         member.user.id,
-      )}\nUser ID: ${inlineCode(member.user.id)}${joinedAt}\nCreated at: ${time(
-        member.user.createdAt,
-        'f',
-      )} (${time(member.user.createdAt, 'R')})`,
+      )}${joinedAt}\nCreated at: ${time(member.user.createdAt, 'f')} (${time(member.user.createdAt, 'R')})`,
     });
 
     joinEmbed.setColor(embedColor);
@@ -30,7 +27,7 @@ export default new Event('guildMemberAdd', async (member) => {
       err,
       client: member.client,
       guild: member.guild,
-      message: `Failed to log the join of ${member.user.tag}.`,
+      message: `Failed to log the join of ${member.user.username}.`,
     });
   }
 });

@@ -7,7 +7,7 @@ export default new Event('guildBanRemove', async (guildUnban) => {
   try {
     const unban = guildUnban.partial ? await guildUnban.fetch() : guildUnban;
 
-    console.log(`${unban.user.tag} was unbanned from ${unban.guild}.`);
+    console.log(`${unban.user.username} was unbanned from ${unban.guild}.`);
 
     const fetchedLogs = await unban.guild.fetchAuditLogs({
       limit: 1,
@@ -37,16 +37,14 @@ export default new Event('guildBanRemove', async (guildUnban) => {
 
       modLog.send({ embeds: [banEmbed] });
     } else {
-      throw new Error(
-        'The IDs of the target in the AuditLog and the target from the Event did not match.',
-      );
+      throw new Error('The IDs of the target in the AuditLog and the target from the Event did not match.');
     }
   } catch (err) {
     return handleEventError({
       err,
       client: guildUnban.client,
       guild: guildUnban.guild,
-      message: `Failed to log the unban of ${guildUnban.user.tag}.`,
+      message: `Failed to log the unban of ${guildUnban.user.username}.`,
     });
   }
 });

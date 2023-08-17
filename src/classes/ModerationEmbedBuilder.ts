@@ -23,7 +23,7 @@ export class ModerationEmbedBuilder extends EmbedBuilder {
     const { target, executor, action, reason, expiration } = options;
 
     const descriptionObject: ModerationDescription = {
-      member: `**Member**: ${target.tag} (${inlineCode(target.id)})`,
+      member: `**Member**: ${target.username} (${inlineCode(target.id)})`,
       action: `**Action**: ${action}`,
     };
 
@@ -57,7 +57,7 @@ export class ModerationEmbedBuilder extends EmbedBuilder {
     this.setColor(color);
 
     this.setAuthor({
-      name: executor.user.tag,
+      name: executor.user.username,
       iconURL: executor.user.displayAvatarURL(),
     });
 
