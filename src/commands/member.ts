@@ -239,6 +239,12 @@ export default new Command({
     }
 
     if (subcommand === 'remove') {
+      if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return interaction.editReply({
+          content: 'You must be an Administrator to use this command.',
+        });
+      }
+
       const user = args.getUser('member', true);
 
       try {
