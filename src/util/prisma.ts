@@ -174,14 +174,42 @@ async function getMembersFromID(members: Snowflake[], manager: GuildMemberManage
 }
 
 export async function getMemberNames(manager: GuildMemberManager) {
-  const members = await prisma.mCMember.findMany();
+  const members = await prisma.mCMember.findMany({
+    orderBy: [
+      {
+        memberSince: 'asc',
+      },
+      {
+        discordID: 'asc',
+      },
+    ],
+  });
 
   const memberCollection = await getMembersFromID(
     members.map((member) => member.discordID),
     manager,
   );
 
-  return memberCollection.map((member) => member.user.username);
+  const sortedMembers = memberCollection
+    .map((member) => {
+      const mcMember = members.find((m) => m.discordID === member.id);
+      return {
+        discordID: member.id,
+        username: member.user.username,
+        memberSince: mcMember?.memberSince,
+      };
+    })
+    .sort((a, b) => {
+      if (a.memberSince && b.memberSince) {
+        const dateComparison = a.memberSince.getTime() - b.memberSince.getTime();
+        if (dateComparison !== 0) {
+          return dateComparison;
+        }
+      }
+      return a.username.localeCompare(b.username);
+    });
+
+  return sortedMembers;
 }
 
 export async function getMemberFromID(id: Snowflake) {
