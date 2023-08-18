@@ -248,22 +248,14 @@ export default new Command({
       const user = args.getUser('member', true);
 
       try {
-        await guild.members.fetch(user.id);
-      } catch (err) {
-        return interaction.editReply({
-          content: `${user.username} is not a member of ${guild.name}.`,
-        });
-      }
-
-      try {
         await removeMember(user.id);
 
         interaction.editReply({
           content: `Successfully removed ${user.username} from the Memberlist.`,
         });
-      } catch {
+      } catch (err) {
         interaction.editReply({
-          content: `${user.username} is not a member of ${guild.name}.`,
+          content: `Failed to remove ${user.username} from ${guild.name}.`,
         });
       }
     }
