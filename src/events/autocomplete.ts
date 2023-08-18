@@ -4,7 +4,7 @@ import type { ScoreboardChoice } from '../commands/scoreboard';
 import allScboreboards from '../assets/scoreboards_1.19.2';
 import { config, ServerChoice } from '../config';
 import { handleEventError } from '../util/loggers';
-import { getAllTodos, getMemberNames } from '../util/prisma';
+import { getAllTodos } from '../util/prisma';
 import { getModNames, ptero } from '../util/pterodactyl';
 import { getWhitelist } from '../util/rcon';
 import type { AutocompleteFocusedOption } from 'discord.js';
@@ -103,10 +103,6 @@ export default new Event('interactionCreate', async (interaction) => {
       const backupNames = backupListResponse.data.reverse().map((backup) => backup.name);
 
       interaction.respond(mapChoices(backupNames, focused));
-    }
-
-    if (interaction.commandName === 'member') {
-      interaction.respond(mapChoices(await getMemberNames(guild.members), focused));
     }
 
     if (interaction.commandName === 'waypoint') {
