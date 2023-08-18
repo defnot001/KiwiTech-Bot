@@ -181,9 +181,7 @@ export async function getMemberNames(manager: GuildMemberManager) {
     manager,
   );
 
-  return memberCollection
-    .sort((a, b) => a.user.username.localeCompare(b.user.username))
-    .map((member) => member.user.username);
+  return memberCollection.map((member) => member.user.username);
 }
 
 export async function getMemberFromID(id: Snowflake) {
