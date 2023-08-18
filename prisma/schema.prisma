@@ -20,7 +20,7 @@ model Todo {
 
 model MCMember {
   discordID     String          @id
-  minecraftData MinecraftData[]
+  minecraftData MinecraftData[] 
   memberSince   DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   trialMember   Boolean
@@ -30,5 +30,5 @@ model MinecraftData {
   uuid            String @id
   username        String
   memberDiscordID String
-  member          MCMember @relation(references: [discordID], fields: [memberDiscordID])
+  member          MCMember @relation(references: [discordID], fields: [memberDiscordID], onDelete: Cascade)
 }
