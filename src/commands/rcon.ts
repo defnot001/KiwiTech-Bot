@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, codeBlock, inlineCode } from 'discord.js';
+import { ApplicationCommandOptionType, PermissionFlagsBits, codeBlock, inlineCode } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { config, ServerChoice } from '../config';
 import { getServerChoices } from '../util/helpers';
@@ -27,6 +27,12 @@ export default new Command({
     await interaction.deferReply();
 
     const choice = args.getString('server', true) as ServerChoice;
+
+    if (choice === 'smp' && !interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+      await interaction.editReply('You do not have the required permissions to run commands on this server.');
+      return;
+    }
+
     const command = args.getString('command');
 
     if (!choice || !command) {
