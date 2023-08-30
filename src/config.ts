@@ -44,6 +44,7 @@ const channelConfigSchema = z.object({
   serverInfo: z.string(),
   todo: z.string(),
   todoLog: z.string(),
+  application: z.string(),
 });
 
 const roleConfigSchema = z.object({
@@ -117,6 +118,7 @@ const importedConfig = {
     serverInfo: env['CHANNEL_SERVERINFO'],
     todo: env['CHANNEL_TODO'],
     todoLog: env['CHANNEL_TODO_LOG'],
+    application: env['CHANNEL_APPLICATION'],
   },
   roles: {
     members: env['ROLE_MEMBER'],

@@ -14,6 +14,7 @@ declare global {
       TODO_WEBHOOK_URL: string;
       CHANNEL_TODO: string;
       CHANNEL_TODO_LOG: string;
+      CHANNEL_APPLICATION: string;
       ROLE_MEMBER: string;
       ROLE_ADMIN: string;
       EMOJI_KIWI: string;
