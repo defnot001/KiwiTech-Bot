@@ -44,6 +44,7 @@ declare global {
       MINECRAFT_SNAPSHOTS_PORT: string;
       MINECRAFT_SNAPSHOTS_RCON_PORT: string;
       MINECRAFT_SNAPSHOTS_RCON_PASSWORD: string;
+      APPLICATION_ID: string;
     }
   }
 }

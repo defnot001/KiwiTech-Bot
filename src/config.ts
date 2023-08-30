@@ -82,6 +82,10 @@ const mcConfigSchema = z.object({
   snapshots: mcServerConfigSchema,
 });
 
+const applicationSchema = z.object({
+  id: z.string(),
+});
+
 const configSchema = z.object({
   bot: botConfigSchema,
   ptero: pteroConfigSchema,
@@ -91,6 +95,7 @@ const configSchema = z.object({
   embedColors: embedColorConfigSchema,
   emoji: emojiConfigSchema,
   mcConfig: mcConfigSchema,
+  application: applicationSchema,
 });
 
 const importedConfig = {
@@ -183,6 +188,9 @@ const importedConfig = {
       operator: true,
       backupLimit: 0,
     },
+  },
+  application: {
+    id: env['APPLICATION_ID'],
   },
 } as const;
 
