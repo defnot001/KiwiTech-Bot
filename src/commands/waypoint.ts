@@ -183,7 +183,9 @@ export async function getWaypoints() {
     'world/minimapsync.json',
   )) as WaypointFile;
 
-  return fileContent.waypoints.waypoints;
+  const waypoints = fileContent.waypoints.waypoints;
+
+  return waypoints.filter((w) => !w.isPrivate);
 }
 
 type WaypointFile = {
@@ -204,6 +206,7 @@ type Waypoint = {
   authorName: string;
   icon?: string;
   creationTime: number;
+  isPrivate?: boolean;
 };
 
 async function getImageFile(iconName: string) {
