@@ -59,35 +59,39 @@ const applicationBodySchema = z.object({
   'Anything else you want to tell us? How can we improve our application?': z.string(),
 });
 
-export function parseApplication(body: ApplicationBody) {
-  const parsedValues = applicationBodySchema.parse(body);
+export function parseApplication(body: ApplicationBody): ApplicationObject | null {
+  try {
+    const parsedValues = applicationBodySchema.parse(body);
 
-  const parsedApplication: ApplicationObject = {
-    timestamp: new Date(),
-    discordName: parsedValues['What is your discord username? (Eg: @tmcplayer)'],
-    ign: parsedValues['What is your in game name?'],
-    pronouns: parsedValues['What pronouns do you use?'],
-    age: parsedValues['How old are you?'],
-    timezone: parsedValues['What is your timezone?'],
-    languages: parsedValues['What languages do you speak?'],
-    minecraftExperienceTime: parsedValues['How long have you been playing Minecraft?'],
-    otherExperience: parsedValues['What is your experience on other technical minecraft servers? (please specify)'],
-    fields: parsedValues['What fields of TMC are you specialised in? '],
-    informationSource: parsedValues['Where did you hear about KiwiTech?'],
-    reason: parsedValues['Why do you want to apply on KiwiTech?'],
-    timeAvailable: parsedValues['How much time can you dedicate to KiwiTech per week? (rough estimate)'],
-    msptAndTps: parsedValues['What do the terms MSPT and TPS stand for and why are they important?'],
-    mobSpawning: parsedValues['How does mob spawning work in minecraft?'],
-    updateSuppression: parsedValues['What is update suppression and how does it work?'],
-    zeroTick: parsedValues["Explain zero ticking mechanics (it's not about force growth):"],
-    pastBuilds: parsedValues['Link images of past builds / farms YOU’ve done:'],
-    suggestions: parsedValues['Anything else you want to tell us? How can we improve our application?'],
-  };
+    const parsedApplication = {
+      timestamp: new Date(),
+      discordName: parsedValues['What is your discord username? (Eg: @tmcplayer)'],
+      ign: parsedValues['What is your in game name?'],
+      pronouns: parsedValues['What pronouns do you use?'],
+      age: parsedValues['How old are you?'],
+      timezone: parsedValues['What is your timezone?'],
+      languages: parsedValues['What languages do you speak?'],
+      minecraftExperienceTime: parsedValues['How long have you been playing Minecraft?'],
+      otherExperience: parsedValues['What is your experience on other technical minecraft servers? (please specify)'],
+      fields: parsedValues['What fields of TMC are you specialised in? '],
+      informationSource: parsedValues['Where did you hear about KiwiTech?'],
+      reason: parsedValues['Why do you want to apply on KiwiTech?'],
+      timeAvailable: parsedValues['How much time can you dedicate to KiwiTech per week? (rough estimate)'],
+      msptAndTps: parsedValues['What do the terms MSPT and TPS stand for and why are they important?'],
+      mobSpawning: parsedValues['How does mob spawning work in minecraft?'],
+      updateSuppression: parsedValues['What is update suppression and how does it work?'],
+      zeroTick: parsedValues["Explain zero ticking mechanics (it's not about force growth):"],
+      pastBuilds: parsedValues['Link images of past builds / farms YOU’ve done:'],
+      suggestions: parsedValues['Anything else you want to tell us? How can we improve our application?'],
+    };
 
-  return parsedApplication;
+    return parsedApplication;
+  } catch {
+    return null;
+  }
 }
 
-export async function postApplicationToChannel(application: ApplicationObject) {
+export async function postApplicationToChannel(application: ApplicationObject, guild: Guild) {
   const embedOne = new EmbedBuilder({
     title: `${application.discordName} Application`,
     color: config.embedColors.default,
@@ -149,33 +153,65 @@ export async function postApplicationToChannel(application: ApplicationObject) {
     timestamp: application.timestamp,
   });
 
-  const guild = client.guilds.cache.get(config.bot.guildID);
-
-  if (!guild) {
-    throw new Error('Guild to post application to not found');
+  if (!client.user) {
+    throw new Error('Client user not found');
   }
+
+  const botLogChannel = await getTextChannelFromID(guild, 'botLog');
+  const applicationChannel = await getTextChannelFromID(guild, 'application');
 
   try {
     const discordName = application.discordName.replace('@', '');
     const member = await getGuildMemberFromUsername(discordName, guild);
 
+    if (!member) {
+      const memberErrorEmbed = new EmbedBuilder({
+        author: {
+          name: client.user.username,
+          iconURL: client.user.displayAvatarURL(),
+        },
+        description: `Could not find member ${application.discordName} in the guild. Please link the application to the member manually using the /application link command.`,
+        color: config.embedColors.red,
+        footer: {
+          text: `${client.user.username} Error Log`,
+        },
+        timestamp: Date.now(),
+      });
+
+      botLogChannel.send({ embeds: [memberErrorEmbed] });
+      return;
+    }
+
     embedOne.setThumbnail(member.user.displayAvatarURL());
 
-    try {
-      const applicationChannel = await getTextChannelFromID(guild, 'application');
+    await applicationChannel.send({
+      embeds: [embedOne, embedTwo, embedThree],
+    });
 
-      await applicationChannel.send({
-        embeds: [embedOne, embedTwo, embedThree],
+    try {
+      const applicationErrorEmbed = new EmbedBuilder({
+        author: {
+          name: client.user.username,
+          iconURL: client.user.displayAvatarURL(),
+        },
+        description: `Application from ${application.discordName} could not be posted to application channel.`,
+        color: config.embedColors.red,
+        footer: {
+          text: `${client.user.username} Error Log`,
+        },
+        timestamp: Date.now(),
       });
+
+      botLogChannel.send({ embeds: [applicationErrorEmbed] });
     } catch {
-      throw new Error('Application channel not found');
+      throw new Error('Bot log channel not found');
     }
   } catch {
     throw new Error('Member not found');
   }
 }
 
-async function getGuildMemberFromUsername(username: string, guild: Guild): Promise<GuildMember> {
+export async function getGuildMemberFromUsername(username: string, guild: Guild): Promise<GuildMember | null> {
   const memberCollection = await guild.members.fetch({
     query: username,
     limit: 1,
@@ -184,7 +220,7 @@ async function getGuildMemberFromUsername(username: string, guild: Guild): Promi
   const member = memberCollection.first();
 
   if (!member) {
-    throw new Error('Member not found');
+    return null;
   }
 
   return member;
