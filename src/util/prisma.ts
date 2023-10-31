@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import type { GuildMemberManager, Snowflake, User } from 'discord.js';
+import { type GuildMemberManager, type Snowflake, type User } from 'discord.js';
 import { getMultipleUUIDs, getUUID } from './mojang';
+import { ApplicationObject } from './application';
 
 const prisma = new PrismaClient();
 
@@ -227,4 +228,53 @@ export async function getMemberFromID(id: Snowflake) {
   }
 
   return member;
+}
+
+export async function storeApplication(application: ApplicationObject, discordID: Snowflake) {
+  await prisma.application.create({
+    data: {
+      discordID,
+      content: application,
+    },
+  });
+}
+
+export async function getApplicationsFromID(discordID: Snowflake) {
+  const applications = await prisma.application.findMany({
+    where: {
+      discordID,
+    },
+  });
+
+  if (!applications || applications.length === 0) {
+    throw new Error(`Application with ID ${discordID} not found.`);
+  }
+
+  return applications;
+}
+
+export async function getLatestApplicationFromID(discordID: Snowflake) {
+  const applications = await getApplicationsFromID(discordID);
+
+  const latestApplication = applications.sort((a, b) => {
+    if (a.createdAt && b.createdAt) {
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    }
+    return 0;
+  })[0];
+
+  return latestApplication;
+}
+
+export async function getLatestApplication() {
+  const applications = await prisma.application.findMany();
+
+  const latestApplication = applications.sort((a, b) => {
+    if (a.createdAt && b.createdAt) {
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    }
+    return 0;
+  })[0];
+
+  return latestApplication;
 }
