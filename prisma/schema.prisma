@@ -32,3 +32,11 @@ model MinecraftData {
   memberDiscordID String
   member          MCMember @relation(references: [discordID], fields: [memberDiscordID], onDelete: Cascade)
 }
+
+model Application {
+  id          Int      @id @default(autoincrement())
+  discordID   String
+  content     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
